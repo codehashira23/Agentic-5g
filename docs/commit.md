@@ -82,9 +82,10 @@
   - Verified: `npm run build` ✅ · `npm run typecheck` ✅ · `npm run lint` ✅
   - Commit: `build: scaffold Next.js app with TypeScript strict`
 
-- [ ] **C021** `chore: configure ESLint/Prettier and typecheck script`
-  - Files: ESLint/Prettier config, `package.json` scripts (`typecheck: tsc --noEmit`, `gen:types` placeholder).
-  - Verify: `npm run lint`, `npm run typecheck` clean.
+- [x] **C021** `chore: configure ESLint/Prettier and typecheck script`
+  - Files: `eslint.config.mjs` (added `eslint-config-prettier` last), `.prettierrc` (100-char, double-quotes, trailing-commas, LF), `.prettierignore`, `package.json` (`format`, `format:check` scripts added).
+  - Installed: `prettier`, `eslint-config-prettier` (dev deps).
+  - Verified: `npm run lint` ✅ · `npm run typecheck` ✅ · `npm run format:check` ✅ · `npm run build` ✅
   - Commit: `chore: configure ESLint, Prettier, and typecheck script`
 
 - [ ] **C022** `chore: add frontend .env.local.example and design tokens`
