@@ -120,9 +120,12 @@
 
 Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, `08`, `05`.)
 
-- [ ] **C040** `feat(domain): NF enums and value objects`
-  - Files: `app/domain/twin/profile.py` (`NFType`, `NFStatus`, `Region`, `NFProfile`).
-  - Verify: `pytest tests/unit/twin/test_profile.py` (basic construction).
+- [x] **C040** `feat(domain): NF enums and value objects`
+  - Files: `app/domain/twin/__init__.py`, `app/domain/twin/profile.py`
+    (`NFType` 13 values · `NFStatus` 5 values · `Region` 4 values · `NFProfile` frozen Pydantic model),
+    `tests/unit/twin/__init__.py`, `tests/unit/twin/test_profile.py` (19 tests).
+  - Also fixed pre-existing settings test isolation bug (reads real `.env`; now uses `_env_file=None`).
+  - Verified: 34 passed · `ruff` ✅ · `mypy` ✅ (10 files) · `lint-imports` ✅ (18 files, 11 deps)
   - Commit: `feat(domain): add NF enums, status, and NFProfile`
 
 - [ ] **C041** `feat(domain): KPI value objects`

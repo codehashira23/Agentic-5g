@@ -22,9 +22,11 @@ class TestDefaultSettings:
         s = Settings()
         assert s.llm.model == "claude-4.8"
 
-    def test_default_llm_api_key_is_none(self) -> None:
-        """API key must default to None — never hard-coded."""
-        s = Settings()
+    def test_default_llm_api_key_is_none(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """API key must default to None when not set in environment."""
+        monkeypatch.delenv("LLM__API_KEY", raising=False)
+        # Create a fresh Settings without reading any .env file
+        s = Settings(_env_file=None)  # type: ignore[call-arg]
         assert s.llm.api_key is None
 
     def test_default_sim_seed(self) -> None:
