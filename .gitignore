@@ -8,7 +8,7 @@ planning/
 scratch/
 notes/
 *.scratch.md
-# docs/
+docs/
 
 # --- Secrets & environment ---
 .env

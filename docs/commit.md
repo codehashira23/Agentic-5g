@@ -65,10 +65,10 @@
   - Verified: `pytest -q` → 2 passed · `ruff` ✅ · `mypy` ✅ · `lint-imports` ✅
   - Commit: `test: add health endpoint integration test`
 
-- [ ] **C015** `chore: add .env.example and typed Settings`
-  - Files: `backend/.env.example`, `app/infrastructure/config.py` (Pydantic Settings).
-  - Fields: `env`, `db_path`, `cors_origin`, `llm` (mode/provider/model/base_url/api_key as SecretStr), `sim` (seed/tick/scenario), `log_level`.
-  - Verify: load defaults in a test; secrets are `SecretStr`.
+- [x] **C015** `chore: add .env.example and typed Settings`
+  - Files: `backend/.env.example`, `app/infrastructure/config/settings.py`,
+    `app/infrastructure/config/__init__.py`, `tests/unit/infra/test_settings.py`.
+  - Verified: 13 tests pass · defaults correct · `SecretStr` masks API key · env overrides work · `ruff` ✅ · `mypy` ✅ · `lint-imports` ✅ (15 files, 8 deps)
   - Commit: `chore: add .env.example and typed Settings`
 
 ---
