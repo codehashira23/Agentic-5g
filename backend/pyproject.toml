@@ -1,0 +1,116 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent5g-backend"
+version = "0.1.0"
+description = "Agentic AI Service Enablement Platform for 5G Advanced Release 20"
+requires-python = ">=3.11"
+dependencies = [
+    # Web framework
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.32.1",
+
+    # Validation / settings
+    "pydantic==2.10.3",
+    "pydantic-settings==2.7.0",
+
+    # Database
+    "sqlalchemy==2.0.36",
+    "aiosqlite==0.20.0",
+
+    # HTTP client (for LLM adapters + testing)
+    "httpx==0.28.1",
+
+    # Jinja2 (for prompt templates)
+    "jinja2==3.1.4",
+
+    # WebSocket support (included via uvicorn[standard], but explicit is fine)
+    "websockets==14.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Testing
+    "pytest==8.3.4",
+    "pytest-asyncio==0.24.0",
+    "anyio==4.7.0",
+
+    # Code quality
+    "ruff==0.8.4",
+    "mypy==1.13.0",
+    "import-linter==2.1",
+
+    # Type stubs
+    "mypy-extensions==1.0.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+# ---------------------------------------------------------------------------
+# Ruff — lint + format
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "PTH", "RUF"]
+ignore = ["E501"]   # line length handled by formatter
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "ANN"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+# ---------------------------------------------------------------------------
+# Mypy — strict types
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.11"
+strict = false          # tighten per-module as the codebase grows
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_ignores = true
+exclude = ["tests/"]
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+
+# ---------------------------------------------------------------------------
+# Import-linter — layer boundary contracts
+# (GR2: domain must never import frameworks; application must never import api)
+# ---------------------------------------------------------------------------
+[tool.importlinter]
+root_packages = ["app"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Domain must not import any framework"
+type = "forbidden"
+source_modules = ["app.domain"]
+forbidden_modules = [
+    "fastapi",
+    "sqlalchemy",
+    "langgraph",
+    "app.api",
+    "app.infrastructure",
+]
+
+[[tool.importlinter.contracts]]
+name = "Application must not import delivery layer"
+type = "forbidden"
+source_modules = ["app.application"]
+forbidden_modules = ["app.api"]
