@@ -60,9 +60,9 @@
   - Verified: `ruff` ✅ · `mypy` ✅ (6 files) · `GET /health` → `{"status":"ok"}` ✅
   - Commit: `feat: minimal FastAPI app with /health endpoint`
 
-- [ ] **C014** `test: health endpoint integration test`
-  - Files: `tests/integration/test_health.py` (httpx AsyncClient against the app).
-  - Verify: `pytest -q` green.
+- [x] **C014** `test: health endpoint integration test`
+  - Files: `tests/integration/test_health.py` (2 tests via httpx AsyncClient + ASGITransport).
+  - Verified: `pytest -q` → 2 passed · `ruff` ✅ · `mypy` ✅ · `lint-imports` ✅
   - Commit: `test: add health endpoint integration test`
 
 - [ ] **C015** `chore: add .env.example and typed Settings`
