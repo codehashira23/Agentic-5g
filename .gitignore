@@ -1,0 +1,64 @@
+# ---------------------------------------------------------------------------
+# Agent5G — .gitignore
+# ---------------------------------------------------------------------------
+
+# --- Unnecessary planning / scratch folders (kept out of the repo) ---
+# Local scratch planning, notes, drafts, and throwaway exploration.
+planning/
+scratch/
+notes/
+*.scratch.md
+docs/
+
+# --- Secrets & environment ---
+.env
+.env.*
+!.env.example
+!*.env.example
+backend/.env
+frontend/.env.local
+*.key
+*.pem
+
+# --- Database (reproducible from seed + scenario; never commit) ---
+data/agent5g.db
+data/agent5g.db-*
+data/backups/
+*.sqlite
+*.sqlite3
+*.db
+
+# --- LLM fixtures are committed (needed for offline replay); caches are not ---
+tests/fixtures/llm/**/_cache/
+
+# --- Python (backend) ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# --- Node / Next.js (frontend) ---
+node_modules/
+.next/
+out/
+.turbo/
+coverage/
+*.tsbuildinfo
+frontend/lib/api/types.gen.ts.bak
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# --- Generated presentation/demo assets (large binaries; optional) ---
+docs/demo-assets/*.mp4
+docs/presentation-assets/screenshots/*.png
