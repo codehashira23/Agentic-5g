@@ -75,10 +75,11 @@
 
 ## Phase 1b — Frontend scaffolding (npm)
 
-- [ ] **C020** `build: scaffold Next.js app (TypeScript strict)`
-  - Files: create `frontend/` via `npx create-next-app@latest frontend --ts --eslint --app --tailwind`.
-  - Ensure `tsconfig.json` `strict: true`.
-  - Verify: `npm install`; `npm run build` succeeds.
+- [x] **C020** `build: scaffold Next.js app (TypeScript strict)`
+  - Files: entire `frontend/` created by `create-next-app@latest` with `--ts --eslint --app --tailwind`.
+  - `package.json` updated: name → `agent5g-frontend`, added `typecheck` and `gen:types` scripts.
+  - `tsconfig.json`: `"strict": true` confirmed.
+  - Verified: `npm run build` ✅ · `npm run typecheck` ✅ · `npm run lint` ✅
   - Commit: `build: scaffold Next.js app with TypeScript strict`
 
 - [ ] **C021** `chore: configure ESLint/Prettier and typecheck script`
