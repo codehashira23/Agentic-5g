@@ -1,26 +1,168 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Agent5G — Design tokens (04-ui.md §5)
+   Dark-first. Light theme overrides via .light class on <html>.
+   All values consumed by Tailwind's @theme and directly as CSS variables.
+--------------------------------------------------------------------------- */
+
+/* --- Dark theme (default) ------------------------------------------------ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Canvas / surfaces */
+  --bg-base: #0b0f14;
+  --bg-panel: #111827;
+  --bg-card: #151b23;
+  --bg-card-hover: #1a2130;
+
+  /* Borders */
+  --border-hairline: #1f2937;
+  --border-subtle: #374151;
+
+  /* Typography */
+  --text-primary: #e5e7eb;
+  --text-muted: #9ca3af;
+  --text-faint: #6b7280;
+
+  /* Semantic status colours (shared across light & dark) */
+  --ok: #10b981; /* emerald-500 */
+  --ok-bg: #064e3b; /* emerald-900 */
+  --warn: #f59e0b; /* amber-500 */
+  --warn-bg: #78350f; /* amber-900 */
+  --crit: #ef4444; /* red-500 */
+  --crit-bg: #7f1d1d; /* red-900 */
+  --accent-ai: #8b5cf6; /* violet-500 */
+  --accent-ai-bg: #3b0764; /* violet-950 */
+  --info: #3b82f6; /* blue-500 */
+  --info-bg: #1e3a5f;
+
+  /* Radius & spacing rhythm (4px base grid) */
+  --radius: 0.75rem;
+  --radius-sm: 0.375rem;
+  --radius-lg: 1rem;
+
+  /* Motion durations */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+
+  /* Elevation / shadows */
+  --shadow-1: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+
+  /* Fonts — matched to layout.tsx Geist variables */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "JetBrains Mono", monospace;
 }
 
+/* --- Light theme override (add class="light" to <html>) ------------------ */
+.light {
+  --bg-base: #f9fafb;
+  --bg-panel: #f3f4f6;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f9fafb;
+  --border-hairline: #e5e7eb;
+  --border-subtle: #d1d5db;
+  --text-primary: #111827;
+  --text-muted: #4b5563;
+  --text-faint: #9ca3af;
+  --shadow-1: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-2: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* --- Tailwind v4 @theme — maps tokens into Tailwind utilities ------------ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Fonts */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* Colours available as bg-*, text-*, border-* Tailwind classes */
+  --color-base: var(--bg-base);
+  --color-panel: var(--bg-panel);
+  --color-card: var(--bg-card);
+  --color-card-hover: var(--bg-card-hover);
+
+  --color-border: var(--border-hairline);
+  --color-border-subtle: var(--border-subtle);
+
+  --color-primary: var(--text-primary);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-crit: var(--crit);
+  --color-crit-bg: var(--crit-bg);
+  --color-ai: var(--accent-ai);
+  --color-ai-bg: var(--accent-ai-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+
+  /* Border radius */
+  --radius-sm: var(--radius-sm);
+  --radius-DEFAULT: var(--radius);
+  --radius-lg: var(--radius-lg);
+
+  /* Transition durations */
+  --duration-fast: var(--dur-fast);
+  --duration-base: var(--dur-base);
+  --duration-slow: var(--dur-slow);
+
+  /* Shadows */
+  --shadow-1: var(--shadow-1);
+  --shadow-2: var(--shadow-2);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* --- Base styles ---------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Dark canvas background by default */
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+/* Respect reduced-motion preference (04-ui.md §8) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scrollbar styling (dark theme) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-panel);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
 }

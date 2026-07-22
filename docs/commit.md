@@ -88,11 +88,13 @@
   - Verified: `npm run lint` ✅ · `npm run typecheck` ✅ · `npm run format:check` ✅ · `npm run build` ✅
   - Commit: `chore: configure ESLint, Prettier, and typecheck script`
 
-- [ ] **C022** `chore: add frontend .env.local.example and design tokens`
-  - Files: `frontend/.env.local.example` (`NEXT_PUBLIC_API_BASE`, `NEXT_PUBLIC_WS_URL`),
-    `frontend/styles/globals.css` (dark-first CSS variable tokens from `04-ui.md` §5),
-    `tailwind.config.ts` mapping tokens.
-  - Verify: `npm run build` clean; tokens applied to root layout background.
+- [x] **C022** `chore: add frontend .env.local.example and design tokens`
+  - Files: `.env.local.example` (`NEXT_PUBLIC_API_BASE`, `NEXT_PUBLIC_WS_URL`),
+    `app/globals.css` (full dark-first token set from `04-ui.md §5` — surfaces, borders, typography,
+    semantic status colours ok/warn/crit/ai, radius, motion durations, shadows, reduced-motion respect),
+    `app/layout.tsx` (updated metadata + `bg-base text-primary` applied to body).
+  - Tailwind v4 CSS-based config — no `tailwind.config.ts` needed; tokens mapped via `@theme inline`.
+  - Verified: `npm run format:check` ✅ · `npm run lint` ✅ · `npm run typecheck` ✅ · `npm run build` ✅
   - Commit: `chore: add env example and dark-theme design tokens`
 
 ---
