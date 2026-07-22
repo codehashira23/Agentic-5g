@@ -128,10 +128,12 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
   - Verified: 34 passed · `ruff` ✅ · `mypy` ✅ (10 files) · `lint-imports` ✅ (18 files, 11 deps)
   - Commit: `feat(domain): add NF enums, status, and NFProfile`
 
-- [ ] **C041** `feat(domain): KPI value objects`
-  - Files: `app/domain/twin/kpi.py` (`KpiSet`, threshold + hysteresis fields),
-    `tests/unit/twin/test_kpi.py`.
-  - Verify: hysteresis logic unit-tested (breach on high, clear on low).
+- [x] **C041** `feat(domain): KPI value objects`
+  - Files: `app/domain/twin/kpi.py`
+    (`KpiName` 10 values · `KpiSample` frozen immutable sample · `KpiSet` with EMA smoothing,
+    physical clamping floor/ceil, hysteresis breach detection, factory helpers),
+    `tests/unit/twin/test_kpi.py` (29 tests).
+  - Verified: 63 total passed · `ruff` ✅ · `mypy` ✅ (11 files) · `lint-imports` ✅ (20 files)
   - Commit: `feat(domain): add KpiSet with threshold hysteresis`
 
 - [ ] **C042** `feat(domain): domain events`
