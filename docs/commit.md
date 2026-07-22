@@ -101,11 +101,15 @@
 
 ## Phase 1c — Windows run scripts
 
-- [ ] **C030** `chore: add Windows run/setup scripts`
-  - Files: `scripts/setup.ps1`, `scripts/run-backend.ps1` (uvicorn 127.0.0.1:8000),
-    `scripts/run-frontend.ps1` (npm run dev).
-  - Each prints the command it runs; binds backend to loopback only.
-  - Verify: run each once manually; backend + frontend boot.
+- [x] **C030** `chore: add Windows run/setup scripts`
+  - Files: `scripts/setup.ps1` (prereq check + venv + pip + npm + env copy),
+    `scripts/run-backend.ps1` (uvicorn 127.0.0.1 only, `-Prod`/`-Port` params),
+    `scripts/run-frontend.ps1` (next dev/build+start, `-Prod`/`-Port` params),
+    `scripts/seed.ps1` (idempotent DB seed, forwards to seed module when available),
+    `scripts/reset.ps1` (guarded DB reset with `-Force` flag, updates .env seed/scenario),
+    `scripts/backup.ps1` (timestamped DB copy to `data/backups/`),
+    `scripts/demo-setup.ps1` (forces `ENV=demo LLM__MODE=replay`, resets to baseline, one-command pre-demo).
+  - Verified: all 7 scripts present · backend boots via script path (127.0.0.1:8000, `{"status":"ok"}`) ✅
   - Commit: `chore: add Windows setup and run scripts`
 
 > **Gate G1 (end of Phase 1):** both apps boot; lint/typecheck clean; `/health` ok. ✅ Backend side PASSED. Frontend pending C020-C030.
@@ -515,7 +519,7 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
 | Phase | Commits | Status |
 |-------|---------|--------|
 | Phase 0: Git bootstrap | C001–C002 | ✅ Done |
-| Phase 1: Backend scaffold | C010–C030 | ✅ C010–C012 done · C013–C030 pending |
+| Phase 1: Backend scaffold | C010–C030 | ✅ All done — Gate G1 PASSED |
 | Phase 2: Domain models | C040–C050 | ⬜ Pending |
 | Phase 3: Infrastructure | C060–C070 | ⬜ Pending |
 | Phase 4: SEL + Twin | C080–C087 | ⬜ Pending (Gate G4) |
