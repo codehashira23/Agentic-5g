@@ -28,6 +28,9 @@ dependencies = [
 
     # WebSocket support (included via uvicorn[standard], but explicit is fine)
     "websockets==14.1",
+
+    # AI orchestration
+    "langgraph>=0.2",
 ]
 
 [project.optional-dependencies]
