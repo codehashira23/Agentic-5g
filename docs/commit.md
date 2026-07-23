@@ -546,7 +546,7 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
 | Phase 0: Git bootstrap | C001–C002 | ✅ Done |
 | Phase 1: Backend scaffold | C010–C030 | ✅ All done — Gate G1 PASSED |
 | Phase 2: Domain models | C040–C050 | ✅ All done — **Gate G2 PASSED** |
-| Phase 3: Infrastructure | C060–C070 | ⬜ Pending |
+| Phase 3: Infrastructure | C060–C070 | ✅ All done — **Gate G3 PASSED** |
 | Phase 4: SEL + Twin | C080–C087 | ⬜ Pending (Gate G4) |
 | Phase 5: Agents + Engine | C090–C098 | ⬜ Pending (**Day 1 milestone: Scenario A** — Gate G5) |
 | Phase 6: API + WS | C100–C106 | ⬜ Pending (Gate G6) |
