@@ -159,9 +159,13 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
   - Verified: 172 total passed · `ruff` ✅ · `mypy` ✅ (15 files) · `lint-imports` ✅ (26 files)
   - Commit: `feat(domain): add NRF entity with registration/discovery`
 
-- [ ] **C045** `feat(domain): AMF/SMF/UPF entities`
-  - Files: `nf/amf.py`, `nf/smf.py`, `nf/upf.py`, tests.
-  - Verify: per-NF state + advance unit tests.
+- [x] **C045** `feat(domain): AMF/SMF/UPF entities`
+  - Files: `app/domain/twin/nf/amf.py` (ue register/deregister/context · advance KPI/failure/recovery),
+    `app/domain/twin/nf/smf.py` (session create/modify/release/list · advance),
+    `app/domain/twin/nf/upf.py` (session install/remove · loadbalance.apply · metrics.get ·
+    M/M/1 latency model · 3 KPIs with thresholds),
+    `tests/unit/twin/test_amf_smf_upf.py` (47 tests).
+  - Verified: 219 total passed · `ruff` ✅ · `mypy` ✅ (18 files) · `lint-imports` ✅ (29 files)
   - Commit: `feat(domain): add AMF, SMF, UPF entities`
 
 - [ ] **C046** `feat(domain): NWDAF, DCF, Edge, and remaining NFs`
