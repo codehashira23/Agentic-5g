@@ -175,6 +175,28 @@ class NetworkTwin:
         Route a service call to the owning NF and return the result.
         Called exclusively by the SEL Invoker (invariant P2 / TP6).
         """
+        # Handle twin-level read services directly
+        if service_name == "twin.snapshot":
+            snap = self.snapshot()
+            return {
+                "tick": snap.tick,
+                "health_pct": snap.health_pct,
+                "nf_count": len(snap.nf_states),
+            }
+        if service_name == "topology.get":
+            region_filter = args.get("region")
+            nodes = list(self._topology.nodes.values())
+            if region_filter:
+                nodes = [n for n in nodes if n.region.value == region_filter]
+            return {
+                "nodes": [
+                    {"id": n.id, "type": n.nf_type.value,
+                     "region": n.region.value, "status": n.status.value}
+                    for n in nodes
+                ],
+                "link_count": self._topology.link_count,
+            }
+
         nf_id = args.get("target") or self._infer_owner(service_name)
         if nf_id not in self._nfs:
             raise ValueError(
