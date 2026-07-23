@@ -57,7 +57,7 @@ class Settings(BaseSettings):
         SIM__DEFAULT_SEED=7
     """
 
-    env: Literal["dev", "test", "demo"] = "dev"
+    env: Literal["dev", "test", "demo", "production"] = "dev"
     db_path: Path = Path("data/agent5g.db")
     cors_origin: str = "http://localhost:3000"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
@@ -72,6 +72,13 @@ class Settings(BaseSettings):
         env_nested_delimiter="__",
         extra="ignore",
     )
+
+    @property
+    def effective_db_path(self) -> Path:
+        """On Railway (production), use /tmp which is always writable."""
+        if self.env == "production":
+            return Path("/tmp/agent5g.db")
+        return self.db_path
 
 
 @lru_cache(maxsize=1)

@@ -4,6 +4,7 @@ Owning docs: 10-backend.md §5
 """
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -14,11 +15,19 @@ from app.api.routers import api_router, ws_router
 from app.infrastructure.config.settings import Settings
 from app.infrastructure.container import build_container
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Build the DI container, start background tasks, yield, then shutdown."""
     settings: Settings = app.state.settings
+    logger.info(
+        "LLM config → mode=%s provider=%s model=%s",
+        settings.llm.mode,
+        settings.llm.provider,
+        settings.llm.model,
+    )
     container = await build_container(settings)
     app.state.container = container
     await container.start_background_tasks()

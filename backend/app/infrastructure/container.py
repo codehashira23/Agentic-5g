@@ -82,7 +82,7 @@ async def build_container(settings: Any | None = None) -> Container:
     cfg: Settings = settings or Settings()
 
     # --- Infrastructure ---
-    db = Database(path=cfg.db_path)
+    db = Database(path=cfg.effective_db_path)
     await db.init()
 
     writer = PersistenceWriter(db)
@@ -99,11 +99,15 @@ async def build_container(settings: Any | None = None) -> Container:
         await writer._commit(batch)
 
     # --- LLM client (replay by default → $0, offline) ---
+    _llm_mode = cfg.llm.mode
+    _llm_provider = cfg.llm.provider
+    _llm_model = cfg.llm.model
+    print(f"[Agent5G] LLM → mode={_llm_mode}  provider={_llm_provider}  model={_llm_model}", flush=True)
     llm = build_llm(
-        mode=cfg.llm.mode,
+        mode=_llm_mode,
         fixtures_dir=Path(cfg.llm.fixtures_dir),
-        provider=cfg.llm.provider,
-        model=cfg.llm.model,
+        provider=_llm_provider,
+        model=_llm_model,
         api_key=cfg.llm.api_key.get_secret_value() if cfg.llm.api_key else "",
         base_url=cfg.llm.base_url or "",
     )
