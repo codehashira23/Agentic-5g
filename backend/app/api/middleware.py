@@ -36,15 +36,17 @@ def install(app: FastAPI, cors_origin: str = "http://localhost:3000") -> None:
     """
     if cors_origin == "*":
         origins: list[str] = ["*"]
+        allow_credentials = False
     else:
         # Support comma-separated list: "https://a.railway.app,http://localhost:3000"
         origins = [o.strip().rstrip("/") for o in cors_origin.split(",") if o.strip()]
+        allow_credentials = True
 
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
-        allow_origin_regex=r"https://.*\.railway\.app",  # allow all Railway subdomains
-        allow_credentials=True,
+        allow_origin_regex=r"https?://.*\.railway\.app",
+        allow_credentials=allow_credentials,
         allow_methods=["*"],
         allow_headers=["*"],
     )
