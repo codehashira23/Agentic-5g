@@ -102,6 +102,10 @@ async def build_container(settings: Any | None = None) -> Container:
     llm = build_llm(
         mode=cfg.llm.mode,
         fixtures_dir=Path(cfg.llm.fixtures_dir),
+        provider=cfg.llm.provider,
+        model=cfg.llm.model,
+        api_key=cfg.llm.api_key.get_secret_value() if cfg.llm.api_key else "",
+        base_url=cfg.llm.base_url or "",
     )
 
     # --- SEL ---
