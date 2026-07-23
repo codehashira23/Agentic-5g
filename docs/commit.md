@@ -165,7 +165,7 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
     `app/domain/twin/nf/upf.py` (session install/remove · loadbalance.apply · metrics.get ·
     M/M/1 latency model · 3 KPIs with thresholds),
     `tests/unit/twin/test_amf_smf_upf.py` (47 tests).
-  - Verified: 219 total passed · `ruff` ✅ · `mypy` ✅ (18 files) · `lint-imports` ✅ (29 files)
+  - Verified: 219 total passed · `ruff` ✅ · `mypc0y` ✅ (18 files) · `lint-imports` ✅ (29 files)
   - Commit: `feat(domain): add AMF, SMF, UPF entities`
 
 - [x] **C046** `feat(domain): NWDAF, DCF, Edge, and remaining NFs`
@@ -194,12 +194,20 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
     `app/domain/agents/memory.py`, tests.
   - Commit: `feat(domain): add agent structured I/O and memory models`
 
-- [ ] **C050** `feat(domain): port interfaces`
-  - Files: `app/domain/twin/ports.py`, `app/domain/services/ports.py`,
-    `app/domain/agents/ports.py`
-    (TwinRepository, ServiceRegistry, PolicyStore, MemoryStore, WorkflowRepository,
-    EventBus, LLMClient, Rng).
-  - Verify: `lint-imports` still clean (no framework imports in domain).
+- [x] **C050** `feat(domain): port interfaces`
+  - Files: `app/domain/twin/ports.py` (`TwinRepository`),
+    `app/domain/services/ports.py` (`ServiceRegistry`, `PolicyStore`),
+    `app/domain/agents/ports.py` (`MemoryStore`, `WorkflowRepository`, `LLMClient`, `Rng`, `EventBus`),
+    `tests/unit/agents/test_ports.py` (15 tests — Protocol conformance + rejection + no-framework-leak).
+  - Verified: 414 total passed · `ruff` ✅ · `mypy` ✅ (33 files) · `lint-imports` ✅ (45 files, 128 deps, 2 contracts kept)
+  - **GATE G2 PASSED** ✅
+
+> **Gate G2 summary:** Domain layer complete and clean.
+> - `ruff check` → All checks passed
+> - `mypy app` → Success: no issues in 33 source files
+> - `pytest -q` → **414 passed**
+> - `lint-imports` → 45 files, 128 dependencies · **Domain must not import any framework: KEPT** · **Application must not import delivery layer: KEPT**
+> - Zero framework imports in `domain/`
   - Commit: `feat(domain): add port interfaces (repositories, bus, llm, rng)`
 
 > **Gate G2:** domain unit tests pass; import-linter clean; zero framework imports in `domain/`.
@@ -537,7 +545,7 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
 |-------|---------|--------|
 | Phase 0: Git bootstrap | C001–C002 | ✅ Done |
 | Phase 1: Backend scaffold | C010–C030 | ✅ All done — Gate G1 PASSED |
-| Phase 2: Domain models | C040–C050 | ⬜ Pending |
+| Phase 2: Domain models | C040–C050 | ✅ All done — **Gate G2 PASSED** |
 | Phase 3: Infrastructure | C060–C070 | ⬜ Pending |
 | Phase 4: SEL + Twin | C080–C087 | ⬜ Pending (Gate G4) |
 | Phase 5: Agents + Engine | C090–C098 | ⬜ Pending (**Day 1 milestone: Scenario A** — Gate G5) |
