@@ -143,10 +143,12 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
   - Verified: 100 total passed · `ruff` ✅ · `mypy` ✅ (12 files) · `lint-imports` ✅ (22 files)
   - Commit: `feat(domain): add domain event types and envelope`
 
-- [ ] **C043** `feat(domain): NetworkFunction base + advance contract`
-  - Files: `app/domain/twin/entities.py` (`NetworkFunction` base with `advance(rng, ctx)`,
-    `handle(name, args)` signature), `tests/unit/twin/test_entities_base.py`.
-  - Verify: base class + a trivial subclass advance is deterministic given a fake rng.
+- [x] **C043** `feat(domain): NetworkFunction base + advance contract`
+  - Files: `app/domain/twin/entities.py`
+    (`RngStream` protocol · `AdvanceContext` frozen Pydantic · `NetworkFunction` abstract base
+    with `advance()`, `handle()`, protected helpers `_set_status/_set_load/_set_kpi/_get_kpi`),
+    `tests/unit/twin/test_entities_base.py` (38 tests incl. FakeRng, StubNF, event-emission cycle).
+  - Verified: 138 total passed · `ruff` ✅ · `mypy` ✅ (13 files) · `lint-imports` ✅ (24 files)
   - Commit: `feat(domain): add NetworkFunction base and advance contract`
 
 - [ ] **C044** `feat(domain): NRF entity`
