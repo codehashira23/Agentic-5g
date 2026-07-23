@@ -168,10 +168,13 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
   - Verified: 219 total passed · `ruff` ✅ · `mypy` ✅ (18 files) · `lint-imports` ✅ (29 files)
   - Commit: `feat(domain): add AMF, SMF, UPF entities`
 
-- [ ] **C046** `feat(domain): NWDAF, DCF, Edge, and remaining NFs`
-  - Files: `nf/nwdaf.py`, `nf/dcf.py`, `nf/edge.py`,
-    `nf/{pcf,udm,nef,af,gnb,ue}.py`, tests.
-  - Verify: unit tests for the Scenario-A-relevant ones (NWDAF, Edge) first.
+- [x] **C046** `feat(domain): NWDAF, DCF, Edge, and remaining NFs`
+  - Files: `nf/nwdaf.py` (analytics subscriptions · AIMLE model deploy/retire/status · accuracy KPI improves with deployed models),
+    `nf/dcf.py` (data collection subscribe/query/history · ADRF-like sample store · DataCollectedEvent),
+    `nf/edge.py` (AIMLE model deploy · latency drops with each hosted model · M/M/1-lite KPIs),
+    `nf/remaining.py` (PCF · UDM with 200 synthetic-only subscribers · NEF · AF · GNB with PRB/handover · UE with attach/mobility),
+    `tests/unit/twin/test_remaining_nfs.py` (51 tests — NWDAF + Edge thorough, rest smoke).
+  - Verified: 270 total passed · `ruff` ✅ · `mypy` ✅ (22 files) · `lint-imports` ✅ (33 files)
   - Commit: `feat(domain): add NWDAF, DCF, Edge, and remaining NFs`
 
 - [ ] **C047** `feat(domain): topology and NetworkTwin aggregate`
