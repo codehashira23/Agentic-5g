@@ -124,7 +124,7 @@ async def build_container(settings: Any | None = None) -> Container:
     # --- Invoker + orchestrator ---
     invoker = ServiceInvoker(registry, policy_engine, twin_service, bus, writer)
     orchestrator = AgentOrchestrator(llm, invoker, registry, twin_service)
-    engine = WorkflowEngine(orchestrator)
+    engine = WorkflowEngine(orchestrator, bus=bus, writer=writer, db=db)
 
     # --- Scheduler wired to twin ---
     async def _on_tick(evt: Any) -> None:
