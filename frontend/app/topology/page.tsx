@@ -6,6 +6,7 @@ import "reactflow/dist/style.css";
 import { api } from "@/lib/api/client";
 import { keys } from "@/lib/query/keys";
 import { useWsStore } from "@/lib/ws/store";
+import { ErrorState } from "@/components/states/error-state";
 import { Skeleton } from "@/components/states/skeleton";
 import type { TopologyResponse } from "@/lib/api/types.gen";
 
@@ -48,7 +49,7 @@ function toEdges(links: TopologyResponse["links"]): Edge[] {
 export default function TopologyPage() {
   const nfStatusById = useWsStore((s) => s.nfStatusById);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: keys.topology(),
     queryFn: () => api.get<TopologyResponse>("/topology"),
     refetchInterval: 10_000,
@@ -59,6 +60,15 @@ export default function TopologyPage() {
       <div className="flex flex-col gap-4">
         <h1 className="text-lg font-bold text-primary">Topology</h1>
         <Skeleton className="h-96" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col gap-4">
+        <h1 className="text-lg font-bold text-primary">Topology</h1>
+        <ErrorState message="Could not load topology — is the backend running?" retry={refetch} />
       </div>
     );
   }

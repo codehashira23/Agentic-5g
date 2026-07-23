@@ -5,9 +5,11 @@ import { keys } from "@/lib/query/keys";
 import { Panel } from "@/components/panel";
 import { StatusBadge } from "@/components/status-badge";
 import { Skeleton } from "@/components/states/skeleton";
+import { ErrorState } from "@/components/states/error-state";
+import { EmptyState } from "@/components/states/empty-state";
 
 export default function DigitalTwinPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: keys.twin(),
     queryFn: () =>
       api.get<{
@@ -18,11 +20,27 @@ export default function DigitalTwinPage() {
     refetchInterval: 3000,
   });
 
-  if (isLoading || !data)
+  if (isLoading)
     return (
       <div className="flex flex-col gap-4">
         <h1 className="text-lg font-bold text-primary">Digital Twin</h1>
         <Skeleton className="h-64" />
+      </div>
+    );
+
+  if (isError)
+    return (
+      <div className="flex flex-col gap-4">
+        <h1 className="text-lg font-bold text-primary">Digital Twin</h1>
+        <ErrorState message="Could not load twin state — is the backend running?" retry={refetch} />
+      </div>
+    );
+
+  if (!data)
+    return (
+      <div className="flex flex-col gap-4">
+        <h1 className="text-lg font-bold text-primary">Digital Twin</h1>
+        <EmptyState message="No twin data yet. Start the simulation first." />
       </div>
     );
 

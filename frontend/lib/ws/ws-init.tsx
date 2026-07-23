@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useWsStore } from "./store";
 import type { WsEvent } from "@/lib/api/types.gen";
 
+// Safe fallback — prevents "ws://undefined/ws" if .env.local is missing
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:8000/ws";
 const RECONNECT_MS = 3000;
 

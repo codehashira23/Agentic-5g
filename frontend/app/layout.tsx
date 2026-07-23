@@ -5,6 +5,7 @@ import { Providers } from "@/components/providers";
 import { NavRail } from "@/components/shell/nav-rail";
 import { TopBar } from "@/components/shell/top-bar";
 import { WsInit } from "@/lib/ws/ws-init";
+import { AppErrorBoundary } from "@/components/error-boundary";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -19,14 +20,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-base text-primary">
         <Providers>
-          <WsInit />
-          <div className="flex flex-1 overflow-hidden">
-            <NavRail />
-            <div className="flex flex-col flex-1 overflow-hidden">
-              <TopBar />
-              <main className="flex-1 overflow-auto p-6">{children}</main>
+          <AppErrorBoundary>
+            <WsInit />
+            <div className="flex flex-1 overflow-hidden">
+              <NavRail />
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <TopBar />
+                <main className="flex-1 overflow-auto p-6">{children}</main>
+              </div>
             </div>
-          </div>
+          </AppErrorBoundary>
         </Providers>
       </body>
     </html>

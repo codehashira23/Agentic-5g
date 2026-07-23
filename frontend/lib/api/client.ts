@@ -1,3 +1,5 @@
+// Safe fallback — NEXT_PUBLIC_* vars are inlined at build time.
+// If .env.local is missing, this prevents "undefined/..." URLs.
 const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000/api/v1";
 
 export class ApiError extends Error {
