@@ -9,6 +9,7 @@ from __future__ import annotations
 from app.domain.services.models import ServiceDescriptor
 
 from .aimle import AIMLE_SERVICES
+from .control_plane import AMF_SERVICES, NEF_SERVICES, PCF_SERVICES, SMF_SERVICES, UDM_SERVICES
 from .dcf import DCF_SERVICES
 from .edge import EDGE_SERVICES
 from .nrf import NRF_SERVICES
@@ -24,6 +25,11 @@ ALL_SERVICES: list[ServiceDescriptor] = (
     + AIMLE_SERVICES
     + UPF_SERVICES
     + EDGE_SERVICES
+    + SMF_SERVICES
+    + PCF_SERVICES
+    + AMF_SERVICES
+    + NEF_SERVICES
+    + UDM_SERVICES
 )
 
 

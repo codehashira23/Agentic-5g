@@ -243,9 +243,41 @@ async def rollback_node(
     state: WorkflowState,
     orchestrator: Any,
 ) -> WorkflowState:
+    """
+    Execute compensations in reverse order.
+    The Recovery agent builds the recovery plan; the Executor-like
+    flow runs each compensation via the SEL invoker.
+    """
     state.stage = "rollback"
-    state.status = "failed"
-    state.error = state.validation.get("rationale", "Unrecoverable failure")
-    # Recovery logic wired in C097 orchestrator
-    _append_trace(state, "rollback", "recovery", {"rationale": state.error})
+
+    failure_reason = state.validation.get("rationale", "Unrecoverable failure")
+
+    # Let the Recovery agent build a plan
+    recovery_output = await orchestrator.recovery.run({
+        "failure_context": failure_reason,
+        "compensations": list(reversed(state.compensations)),
+        "snapshot": state.observation.get("entity_states", {}),
+    }, orchestrator.make_context("recovery"))
+
+    # Execute compensations in reverse order via the SEL invoker
+    for comp in recovery_output.steps:
+        try:
+            await orchestrator.invoker.invoke(
+                name=comp.service,
+                args={**comp.args, "target": comp.args.get("target", "")},
+                caller="recovery",
+                correlation_id=state.id,
+            )
+        except Exception as exc:
+            logger.warning("Compensation %s failed: %s", comp.service, exc)
+
+    if recovery_output.escalate:
+        state.status = "failed"
+        state.error = recovery_output.escalate_reason or failure_reason
+    else:
+        state.status = "failed"
+        state.error = failure_reason
+
+    state.recovery = recovery_output.model_dump()
+    _append_trace(state, "rollback", "recovery", recovery_output)
     return state

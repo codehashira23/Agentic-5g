@@ -234,16 +234,20 @@ class NetworkTwin:
     def _infer_owner(self, service_name: str) -> str:
         """
         Infer the target NF id from the service prefix.
-        e.g. "nrf.discover" → find any active NRF.
-        This is a fallback; callers should pass an explicit target.
+        Uses a lowercase prefix → NFType value map so casing mismatches
+        don't cause failures (e.g. 'pcf' → 'PCF', 'gnb' → 'gNB').
         """
-        prefix = service_name.split(".")[0].upper()
-        try:
-            nf_type = NFType(prefix)
-        except ValueError:
-            # AIMLE services route to NWDAF or Edge depending on context
+        prefix_to_nf: dict[str, str] = {
+            "nrf": "NRF", "amf": "AMF", "smf": "SMF", "upf": "UPF",
+            "udm": "UDM", "pcf": "PCF", "nwdaf": "NWDAF", "nef": "NEF",
+            "dcf": "DCF", "af": "AF", "gnb": "gNB", "edge": "Edge",
+        }
+        prefix = service_name.split(".")[0].lower()
+        nf_type_value = prefix_to_nf.get(prefix)
+
+        if nf_type_value is None:
             if service_name.startswith("aimle."):
-                nf_type = NFType.NWDAF
+                nf_type_value = "NWDAF"
             else:
                 raise ValueError(
                     f"Cannot infer owner for service '{service_name}'"
@@ -251,11 +255,11 @@ class NetworkTwin:
 
         candidates = [
             nf for nf in self._nfs.values()
-            if nf.nf_type == nf_type and nf.is_healthy()
+            if nf.nf_type.value == nf_type_value and nf.is_healthy()
         ]
         if not candidates:
             raise ValueError(
-                f"No healthy {nf_type.value} available for service '{service_name}'"
+                f"No healthy {nf_type_value} available for service '{service_name}'"
             )
         return sorted(c.id for c in candidates)[0]
 
