@@ -151,10 +151,12 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
   - Verified: 138 total passed · `ruff` ✅ · `mypy` ✅ (13 files) · `lint-imports` ✅ (24 files)
   - Commit: `feat(domain): add NetworkFunction base and advance contract`
 
-- [ ] **C044** `feat(domain): NRF entity`
-  - Files: extend `entities.py` (or `nf/nrf.py`) with `NRF`
-    (register/deregister/discover state), `tests/unit/twin/test_nrf.py`.
-  - Verify: register → discover → deregister transitions; never-zero-NRF invariant at domain level.
+- [x] **C044** `feat(domain): NRF entity`
+  - Files: `app/domain/twin/nf/__init__.py`, `app/domain/twin/nf/nrf.py`
+    (register · deregister with PLC-1 invariant · discover with type/region/status filters ·
+    list · advance KPI/stochastic-failure/auto-recovery · standby promotion),
+    `tests/unit/twin/test_nrf.py` (34 tests).
+  - Verified: 172 total passed · `ruff` ✅ · `mypy` ✅ (15 files) · `lint-imports` ✅ (26 files)
   - Commit: `feat(domain): add NRF entity with registration/discovery`
 
 - [ ] **C045** `feat(domain): AMF/SMF/UPF entities`
