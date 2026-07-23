@@ -552,6 +552,6 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
 | Phase 6: API + WS | C100–C106 | ✅ All done — **Gate G6 PASSED** |
 | Phase 7: Frontend | C110–C117 | ✅ All done — **Gate G7 PASSED** |
 | Phase 8: Autonomy + Recovery | C120–C125 | ✅ All done — **Gate G8 PASSED** |
-| Phase 9: Tests + Demo + CI | C130–C135 | ⬜ Pending (**Day 2 milestone** — Gate G9) |
+| Phase 9: Tests + Demo + CI | C130–C135 | ✅ All done — **Gate G9 PASSED** |
 
 **Golden rules while committing:** never commit on a red state · keep each commit to a few files · run the relevant verify before committing · LLM stays in `replay` (offline, $0) · never commit `.env`, `data/*.db`, or `planning/`.
