@@ -29,10 +29,21 @@ class CorrelationMiddleware(BaseHTTPMiddleware):
 
 
 def install(app: FastAPI, cors_origin: str = "http://localhost:3000") -> None:
-    """Install CORS (localhost-only) and correlation-id middleware."""
+    """Install CORS and correlation-id middleware.
+
+    cors_origin can be a single origin or comma-separated list.
+    Use '*' to allow all origins (useful during Railway deployment).
+    """
+    if cors_origin == "*":
+        origins: list[str] = ["*"]
+    else:
+        # Support comma-separated list: "https://a.railway.app,http://localhost:3000"
+        origins = [o.strip().rstrip("/") for o in cors_origin.split(",") if o.strip()]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[cors_origin],
+        allow_origins=origins,
+        allow_origin_regex=r"https://.*\.railway\.app",  # allow all Railway subdomains
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
