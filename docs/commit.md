@@ -136,10 +136,11 @@ Build the domain in tiny slices. Each is unit-tested. (Owning docs: `06`, `07`, 
   - Verified: 63 total passed · `ruff` ✅ · `mypy` ✅ (11 files) · `lint-imports` ✅ (20 files)
   - Commit: `feat(domain): add KpiSet with threshold hysteresis`
 
-- [ ] **C042** `feat(domain): domain events`
-  - Files: `app/domain/twin/events.py` (event dataclasses/models + canonical envelope),
-    `tests/unit/twin/test_events.py`.
-  - Verify: envelope serializes; event types match `06` §14.
+- [x] **C042** `feat(domain): domain events`
+  - Files: `app/domain/twin/events.py`
+    (`EventType` 21 values · `DomainEvent` base with `to_envelope()` · 21 typed event classes),
+    `tests/unit/twin/test_events.py` (37 tests).
+  - Verified: 100 total passed · `ruff` ✅ · `mypy` ✅ (12 files) · `lint-imports` ✅ (22 files)
   - Commit: `feat(domain): add domain event types and envelope`
 
 - [ ] **C043** `feat(domain): NetworkFunction base + advance contract`
