@@ -87,7 +87,7 @@ export default function SimulationPage() {
           {scenarios.map((s) => (
             <li key={s}>
               <button
-                onClick={() => api.post("/simulation/scenario", { name: s })}
+                onClick={() => api.post("/simulation/reset", { name: s }).then(() => qc.invalidateQueries({ queryKey: keys.simStatus() }))}
                 className="px-3 py-1 bg-card border border-border rounded text-xs text-muted hover:border-ai hover:text-ai transition-colors"
               >
                 {s}

@@ -27,12 +27,23 @@ export default function AnalyticsPage() {
 
   const kpiMeta = KPI_OPTIONS.find((k) => k.value === selectedKpi) ?? KPI_OPTIONS[0];
 
-  // Load available nodes
-  const { data: nodes = [] } = useQuery<KpiNode[]>({
+  // Load available nodes — fall back to known UPF/gNB/Edge nodes if DB is empty
+  const FALLBACK_NODES: KpiNode[] = [
+    { id: "upf_delhi_1",   type: "UPF",  region: "Delhi"  },
+    { id: "upf_mumbai_1",  type: "UPF",  region: "Mumbai" },
+    { id: "gnb_delhi_1",   type: "gNB",  region: "Delhi"  },
+    { id: "gnb_mumbai_1",  type: "gNB",  region: "Mumbai" },
+    { id: "edge_delhi_1",  type: "Edge", region: "Delhi"  },
+    { id: "edge_mumbai_1", type: "Edge", region: "Mumbai" },
+  ];
+
+  const { data: fetchedNodes = [] } = useQuery<KpiNode[]>({
     queryKey: ["analytics", "nodes"],
     queryFn: () => api.get<KpiNode[]>("/analytics/nodes"),
     staleTime: 30_000,
   });
+
+  const nodes = fetchedNodes.length > 0 ? fetchedNodes : FALLBACK_NODES;
 
   // Load KPI data
   const { data: kpis = [], isLoading, isError } = useQuery<KpiPoint[]>({
@@ -59,10 +70,7 @@ export default function AnalyticsPage() {
             className="bg-card border border-border rounded px-2 py-1.5 text-sm text-primary
                        focus:outline-none focus:border-ai min-w-[180px]"
           >
-            {nodes.length === 0 && (
-              <option value="upf_delhi_1">upf_delhi_1</option>
-            )}
-            {nodes.map((n) => (
+          {nodes.map((n) => (
               <option key={n.id} value={n.id}>
                 {n.id} ({n.type} · {n.region})
               </option>

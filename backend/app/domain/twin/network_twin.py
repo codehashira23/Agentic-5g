@@ -113,6 +113,17 @@ class NetworkTwin:
                 ue = UE(nf_id=f"ue_{r}_{i:02d}", region=region)
                 twin._register(ue)
 
+        # Pre-populate UPF sessions so load bars show non-zero values
+        # (simulates typical traffic load at startup)
+        import random as _rnd
+        _rnd.seed(seed)
+        for nf_id, nf in twin._nfs.items():
+            if nf.nf_type.value == "UPF":
+                # Add 80-150 sessions to give 16-30% utilisation baseline
+                n_sessions = _rnd.randint(80, 150)
+                for j in range(n_sessions):
+                    nf._served_sessions.add(f"sess_{nf_id}_{j:04d}")  # type: ignore[attr-defined]
+
         # --- Build topology ---
         twin._topology = twin._build_topology()
         return twin

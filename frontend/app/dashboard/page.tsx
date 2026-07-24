@@ -9,16 +9,23 @@ import { EventFeed } from "@/components/event-feed";
 import { Skeleton } from "@/components/states/skeleton";
 
 export default function DashboardPage() {
-  const { data: health } = useQuery({
+  const { data: simStatus } = useQuery({
     queryKey: keys.simStatus(),
     queryFn: () =>
-      api.get<{ status: string; tick: number; health_pct?: number }>("/simulation/status"),
+      api.get<{ status: string; tick: number; nf_count?: number }>("/simulation/status"),
+    refetchInterval: 3000,
+  });
+
+  // health_pct from the twin endpoint (more accurate than WS store default)
+  const { data: twin } = useQuery({
+    queryKey: keys.twin(),
+    queryFn: () => api.get<{ tick: number; health_pct: number }>("/twin"),
     refetchInterval: 5000,
   });
 
   const activeWorkflows = useWsStore((s) => s.activeWorkflows);
   const alerts = useWsStore((s) => s.alerts);
-  const health_pct = useWsStore((s) => s.health_pct);
+  const health_pct = twin?.health_pct ?? 1.0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -26,7 +33,7 @@ export default function DashboardPage() {
 
       {/* Stat row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {health ? (
+        {simStatus ? (
           <>
             <StatCard title="Active Workflows" value={activeWorkflows} status="ai" />
             <StatCard
@@ -34,7 +41,7 @@ export default function DashboardPage() {
               value={`${Math.round(health_pct * 100)}%`}
               status={health_pct > 0.8 ? "ok" : health_pct > 0.5 ? "warn" : "crit"}
             />
-            <StatCard title="Sim Tick" value={health.tick ?? 0} status="ok" />
+            <StatCard title="Sim Tick" value={simStatus.tick ?? 0} status="ok" />
             <StatCard
               title="Open Alerts"
               value={alerts.length}

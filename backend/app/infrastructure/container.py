@@ -83,6 +83,7 @@ async def build_container(settings: Any | None = None) -> Container:
 
     # --- Infrastructure ---
     db = Database(path=cfg.effective_db_path)
+    print(f"[Agent5G] DB path → {cfg.effective_db_path}", flush=True)
     await db.init()
 
     writer = PersistenceWriter(db)

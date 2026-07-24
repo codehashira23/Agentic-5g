@@ -13,26 +13,28 @@ const LEVEL_COLOR: Record<string, string> = {
   debug: "text-faint",
 };
 
+type LogItem = {
+  id: number;
+  ts: string;
+  level: string;
+  message: string;
+  correlation_id?: string;
+  type?: string;
+  source?: "log" | "event";
+};
+
 export default function LogsPage() {
   const [correlationId, setCorrelationId] = useState("");
+  const [tab, setTab] = useState<"logs" | "events">("events");
 
   const queryUrl = correlationId.trim()
-    ? `/logs?correlation_id=${encodeURIComponent(correlationId.trim())}`
-    : "/logs";
+    ? `/${tab}?correlation_id=${encodeURIComponent(correlationId.trim())}`
+    : `/${tab}`;
 
   const { data } = useQuery({
     queryKey: keys.logs(correlationId.trim() || undefined),
     queryFn: () =>
-      api.get<{
-        items: Array<{
-          id: number;
-          ts: string;
-          level: string;
-          message: string;
-          correlation_id?: string;
-          type?: string;
-        }>;
-      }>(queryUrl),
+      api.get<{ items: LogItem[] }>(queryUrl),
     refetchInterval: 3000,
   });
 
@@ -41,6 +43,22 @@ export default function LogsPage() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-lg font-bold text-primary">Logs</h1>
+
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-border">
+        {(["events", "logs"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-4 py-1.5 text-xs capitalize transition-colors
+              ${tab === t
+                ? "border-b-2 border-ai text-ai"
+                : "text-muted hover:text-primary"}`}
+          >
+            {t === "events" ? "Domain Events" : "App Logs"}
+          </button>
+        ))}
+      </div>
 
       {/* Filter bar */}
       <div className="flex items-center gap-2">
@@ -63,13 +81,19 @@ export default function LogsPage() {
         )}
       </div>
 
-      <Panel title={`${items.length} entries${correlationId ? ` · filtered by ${correlationId.slice(0, 12)}…` : ""}`}>
+      <Panel
+        title={`${items.length} ${tab === "events" ? "domain events" : "app logs"}${correlationId ? ` · ${correlationId.slice(0, 14)}…` : ""}`}
+      >
         {items.length === 0 ? (
-          <EmptyState message={
-            correlationId
-              ? "No logs for this correlation ID — try a different ID."
-              : "No logs yet — submit a workflow to generate log entries."
-          } />
+          <EmptyState
+            message={
+              correlationId
+                ? "No entries for this correlation ID."
+                : tab === "events"
+                ? "No events yet — start the simulation or submit a workflow."
+                : "No app logs yet — submit a workflow to generate entries."
+            }
+          />
         ) : (
           <ul className="flex flex-col gap-0.5 font-mono text-xs max-h-[600px] overflow-y-auto">
             {items.map((log) => (
@@ -80,11 +104,13 @@ export default function LogsPage() {
                 <span className="text-faint shrink-0 tabular-nums">
                   {log.ts?.slice(11, 23) ?? "—"}
                 </span>
-                <span className={`shrink-0 w-10 ${LEVEL_COLOR[log.level] ?? "text-muted"}`}>
-                  {log.level?.toUpperCase().slice(0, 4)}
-                </span>
+                {tab === "logs" ? (
+                  <span className={`shrink-0 w-10 ${LEVEL_COLOR[log.level] ?? "text-muted"}`}>
+                    {log.level?.toUpperCase().slice(0, 4)}
+                  </span>
+                ) : null}
                 {log.type && (
-                  <span className="text-ai shrink-0 max-w-[140px] truncate">{log.type}</span>
+                  <span className="text-ai shrink-0 max-w-[180px] truncate">{log.type}</span>
                 )}
                 <span className="text-muted flex-1 truncate">{log.message}</span>
                 {log.correlation_id && (

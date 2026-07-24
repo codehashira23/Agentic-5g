@@ -156,6 +156,12 @@ class ServiceInvoker:
         latency_ms = (datetime.now(UTC).timestamp() - start) * 1000.0
 
         # ------------------------------------------------------------------
+        # 4a. Side-effect: persist ModelRow for model deployments
+        # ------------------------------------------------------------------
+        if status == ServiceStatus.OK and name == "aimle.model.deploy":
+            await self._persist_model(args, result_data, ts, correlation_id)
+
+        # ------------------------------------------------------------------
         # 5. Emit SERVICE_RESULT + persist call
         # ------------------------------------------------------------------
         await self._bus.publish(ServiceResultEvent(
@@ -201,6 +207,35 @@ class ServiceInvoker:
                 policy_id=policy_id,
                 latency_ms=latency_ms,
                 ts=ts,
+            )
+        ))
+
+    async def _persist_model(
+        self,
+        args: dict[str, Any],
+        result: dict[str, Any],
+        ts: str,
+        correlation_id: str | None,
+    ) -> None:
+        """Persist a ModelRow when aimle.model.deploy succeeds."""
+        import uuid as _uuid
+        from app.infrastructure.db.models import ModelRow
+        model_id = (
+            result.get("model_id")
+            or args.get("model_id")
+            or f"model_{_uuid.uuid4().hex[:8]}"
+        )
+        target = args.get("target_node_id") or args.get("target") or ""
+        await self._writer.submit(WriteOp(
+            stmt=insert(ModelRow).prefix_with("OR IGNORE").values(
+                id=model_id,
+                name=args.get("model_name") or model_id,
+                version=str(args.get("version", "1.0")),
+                state="deployed",
+                target_node_id=target or None,
+                metrics_json="{}",
+                created_at=ts,
+                updated_at=ts,
             )
         ))
 

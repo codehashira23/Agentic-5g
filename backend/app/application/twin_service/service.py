@@ -35,7 +35,7 @@ from app.infrastructure.writer.writer import PersistenceWriter, WriteOp
 logger = logging.getLogger(__name__)
 
 # Max KPI samples to buffer before write-behind flush
-_KPI_BATCH_SIZE = 50
+_KPI_BATCH_SIZE = 5
 
 
 class TwinService:
@@ -116,9 +116,12 @@ class TwinService:
                 )
             ))
 
-        # Write-behind: accumulate KPI buffer
+        # Write-behind: accumulate KPI buffer, flush every tick
         self._kpi_buffer.extend(kpi_rows)
         if len(self._kpi_buffer) >= _KPI_BATCH_SIZE:
+            await self._flush_kpis()
+        # Always flush any remaining KPIs so Analytics page sees data immediately
+        if self._kpi_buffer:
             await self._flush_kpis()
 
         # Publish all events on the bus
