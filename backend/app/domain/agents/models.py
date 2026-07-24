@@ -112,7 +112,7 @@ class Interpretation(AgentOutput):
     Structured decomposition of the intent.
     """
 
-    objective: str = Field(..., description="What needs to be achieved")
+    objective: str = Field(default="", description="What needs to be achieved")
     targets: list[str] = Field(
         default_factory=list,
         description="Target entity ids or regions",

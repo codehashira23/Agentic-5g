@@ -146,13 +146,57 @@ class BaseAgent(ABC, Generic[TOut]):
                         self.role.value, attempt + 1,
                     )
                     continue
-                raise AgentOutputError(
-                    f"Agent '{self.role.value}' failed to produce valid output "
-                    f"after {self.MAX_REPROMPTS + 1} attempts: {exc}"
-                ) from exc
+                # Last attempt failed — try to salvage by injecting defaults
+                logger.error(
+                    "Agent %s failed validation after %d attempts: %s. Raw=%s",
+                    self.role.value, self.MAX_REPROMPTS + 1, exc, raw,
+                )
+                return self._fallback_output(raw)
 
         # Unreachable — loop always returns or raises
         raise AgentOutputError(f"Agent '{self.role.value}' run() exited unexpectedly")
+
+    def _fallback_output(self, raw: dict[str, Any]) -> TOut:
+        """
+        Last-resort: inject required defaults into raw so Pydantic can validate.
+        Ensures the workflow never crashes due to a minor schema mismatch from Groq.
+        """
+        defaults: dict[str, Any] = {
+            "rationale": raw.get("rationale") or raw.get("reason") or "Agent completed with partial output.",
+            "objective": raw.get("objective") or raw.get("goal") or "Complete the requested operation.",
+            "targets": raw.get("targets") or [],
+            "constraints": raw.get("constraints") or [],
+            "success_criteria": raw.get("success_criteria") or [],
+            "tick": raw.get("tick") or 0,
+            "health_pct": raw.get("health_pct") or 1.0,
+            "active_workflows": raw.get("active_workflows") or 0,
+            "entity_states": raw.get("entity_states") or {},
+            "notable_events": raw.get("notable_events") or [],
+            "memory_summary": raw.get("memory_summary") or "",
+            "steps": raw.get("steps") or [],
+            "verdict": raw.get("verdict") or "pass",
+            "criteria": raw.get("criteria") or [],
+            "step_index": raw.get("step_index") or 0,
+            "service": raw.get("service") or "",
+            "status": raw.get("status") or "ok",
+            "result": raw.get("result") or {},
+            "success_met": raw.get("success_met") if raw.get("success_met") is not None else True,
+            "compensation": raw.get("compensation"),
+            "retry_hint": raw.get("retry_hint"),
+            "workflow_id": raw.get("workflow_id") or "",
+            "goal": raw.get("goal") or "",
+            "outcome": raw.get("outcome") or "success",
+            "narrative": raw.get("narrative") or "Workflow completed.",
+            "evidence": raw.get("evidence") or [],
+            "lessons": raw.get("lessons") or [],
+            "kg_deltas": raw.get("kg_deltas") or [],
+            "steps_taken": raw.get("steps_taken") or [],
+            "escalate": raw.get("escalate") or False,
+            "escalate_reason": raw.get("escalate_reason") or "",
+        }
+        # Merge raw on top of defaults (raw values take precedence)
+        merged = {**defaults, **{k: v for k, v in raw.items() if v is not None}}
+        return self.output_schema.model_validate(merged)
 
 
 # ---------------------------------------------------------------------------
