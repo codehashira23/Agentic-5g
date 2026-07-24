@@ -152,6 +152,7 @@ class WorkflowEngine:
     ) -> None:
         """Write workflow row directly to DB (bypasses async queue for immediacy)."""
         if self._db is None:
+            print(f"[Engine] SKIP persist {state.id} — db is None", flush=True)
             return
         try:
             from sqlalchemy import insert
@@ -181,7 +182,9 @@ class WorkflowEngine:
                 )
 
             stmt = insert(WorkflowRow).prefix_with("OR REPLACE").values(**row_data)
+            print(f"[Engine] Writing workflow {state.id} status={status}", flush=True)
             await self._db.execute_write(stmt)
+            print(f"[Engine] Wrote workflow {state.id} OK", flush=True)
 
             # Persist trace rows on final status only
             if status in ("completed", "failed"):
@@ -205,8 +208,10 @@ class WorkflowEngine:
                         "OR IGNORE"
                     ).values(**trace_data)
                     await self._db.execute_write(trace_stmt)
+                print(f"[Engine] Wrote {len(state.trace)} trace rows for {state.id}", flush=True)
 
         except Exception as exc:
+            print(f"[Engine] PERSIST FAILED {state.id}: {exc}", flush=True)
             logger.warning("Failed to persist workflow %s: %s", state.id, exc)
 
     # ------------------------------------------------------------------
