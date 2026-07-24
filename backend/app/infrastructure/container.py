@@ -130,6 +130,32 @@ async def build_container(settings: Any | None = None) -> Container:
     )
     twin_service = TwinService(twin, rng, bus, writer, db, run_id=1)
 
+    # --- Seed topology_nodes so KPI FK constraint is satisfied ---
+    # KpiRow.node_id has a FK → topology_nodes.id.
+    # Without these rows KPI inserts fail silently with FOREIGN KEY constraint.
+    from datetime import UTC as _UTC, datetime as _dt
+    from sqlalchemy import insert as _insert
+    from app.infrastructure.db.models import TopologyNodeRow as _TNR
+    _now = _dt.now(_UTC).isoformat()
+    async with db.session() as _s:
+        for _node in twin.topology.nodes.values():
+            _existing = await _s.get(_TNR, _node.id)
+            if _existing is None:
+                _s.add(_TNR(
+                    id=_node.id,
+                    type=_node.nf_type.value,
+                    region=_node.region.value,
+                    status=_node.status.value,
+                    load=_node.load,
+                    x=_node.x,
+                    y=_node.y,
+                    state_json="{}",
+                    services_json="[]",
+                    updated_at=_now,
+                    tick=0,
+                ))
+    print(f"[Agent5G] Seeded {len(twin.topology.nodes)} topology nodes", flush=True)
+
     # --- Invoker + orchestrator ---
     invoker = ServiceInvoker(registry, policy_engine, twin_service, bus, writer)
     orchestrator = AgentOrchestrator(llm, invoker, registry, twin_service)
