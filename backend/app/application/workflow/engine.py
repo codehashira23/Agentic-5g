@@ -150,8 +150,8 @@ class WorkflowEngine:
     async def _persist_workflow(
         self, state: WorkflowState, status: str
     ) -> None:
-        """Write/update the workflows row in the DB."""
-        if self._writer is None or self._db is None:
+        """Write workflow row directly to DB (bypasses async queue for immediacy)."""
+        if self._db is None:
             return
         try:
             from sqlalchemy import insert
@@ -180,29 +180,31 @@ class WorkflowEngine:
                     json.dumps(state.summary) if state.summary else None
                 )
 
-            from app.infrastructure.writer.writer import WriteOp
             stmt = insert(WorkflowRow).prefix_with("OR REPLACE").values(**row_data)
-            await self._writer.submit(WriteOp(stmt=stmt))
+            await self._db.execute_write(stmt)
 
-            # Also persist trace rows
-            for entry in state.trace:
+            # Persist trace rows on final status only
+            if status in ("completed", "failed"):
                 from app.infrastructure.db.models import WorkflowTraceRow
-                trace_data = {
-                    "workflow_id": state.id,
-                    "correlation_id": state.id,
-                    "stage": entry.stage,
-                    "agent_role": entry.agent_role,
-                    "rationale": entry.rationale,
-                    "structured_json": json.dumps(entry.structured, default=str),
-                    "tokens_in": entry.tokens_in,
-                    "tokens_out": entry.tokens_out,
-                    "latency_ms": entry.latency_ms,
-                    "ts": entry.ts or now,
-                }
-                trace_stmt = insert(WorkflowTraceRow).prefix_with("OR IGNORE").values(
-                    **trace_data
-                )
-                await self._writer.submit(WriteOp(stmt=trace_stmt))
+                for entry in state.trace:
+                    trace_data = {
+                        "workflow_id": state.id,
+                        "correlation_id": state.id,
+                        "stage": entry.stage,
+                        "agent_role": entry.agent_role,
+                        "rationale": entry.rationale,
+                        "structured_json": json.dumps(
+                            entry.structured, default=str
+                        ),
+                        "tokens_in": entry.tokens_in,
+                        "tokens_out": entry.tokens_out,
+                        "latency_ms": entry.latency_ms,
+                        "ts": entry.ts or now,
+                    }
+                    trace_stmt = insert(WorkflowTraceRow).prefix_with(
+                        "OR IGNORE"
+                    ).values(**trace_data)
+                    await self._db.execute_write(trace_stmt)
 
         except Exception as exc:
             logger.warning("Failed to persist workflow %s: %s", state.id, exc)
