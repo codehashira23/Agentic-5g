@@ -130,6 +130,17 @@ async def build_container(settings: Any | None = None) -> Container:
     )
     twin_service = TwinService(twin, rng, bus, writer, db, run_id=1)
 
+    # --- Mark stale running workflows as failed (server restart cleanup) ---
+    from sqlalchemy import update as _update, text as _text
+    from app.infrastructure.db.models import WorkflowRow as _WR
+    async with db.session() as _s:
+        await _s.execute(
+            _update(_WR)
+            .where(_WR.status == "running")
+            .values(status="failed", error="Server restarted — workflow interrupted")
+        )
+    print("[Agent5G] Cleaned up stale running workflows", flush=True)
+
     # --- Seed topology_nodes so KPI FK constraint is satisfied ---
     # KpiRow.node_id has a FK → topology_nodes.id.
     # Without these rows KPI inserts fail silently with FOREIGN KEY constraint.

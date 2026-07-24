@@ -92,6 +92,8 @@ class EdgeNode(NetworkFunction):
                 1 for m in self._hosted_models.values()
                 if m.get("state") == "deployed"
             )
+            if active_models > 0:
+                print(f"[Edge] {self.id} tick={ctx.tick} active_models={active_models}", flush=True)
             raw_load = (
                 active_models * 0.15 * ctx.demand_factor
                 + rng.gauss(0.0, 0.02)
@@ -158,6 +160,7 @@ class EdgeNode(NetworkFunction):
         )
         name: str = args.get("name") or args.get("model_name") or model_id
         self._hosted_models[model_id] = {"name": name, "state": "deployed"}
+        print(f"[Edge] {self.id} deployed model={model_id} hosted_count={self.deployed_model_count}", flush=True)
         return {
             "model_id": model_id,
             "state": "deployed",

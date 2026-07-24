@@ -83,6 +83,14 @@ async def list_workflows(
         ).limit(limit)
         if status:
             stmt = stmt.where(WorkflowRow.status == status)
+        else:
+            # Exclude stale running rows older than 5 minutes
+            from datetime import UTC, datetime, timedelta
+            cutoff = (datetime.now(UTC) - timedelta(minutes=5)).isoformat()
+            stmt = stmt.where(
+                (WorkflowRow.status != "running") |
+                (WorkflowRow.created_at >= cutoff)
+            )
         result = await session.execute(stmt)
         rows = result.scalars().all()
     return [_row_to_response(r) for r in rows]

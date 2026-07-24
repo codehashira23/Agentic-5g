@@ -70,10 +70,16 @@ class WorkflowEngine:
         # Persist the workflow row immediately so GET /workflows returns it
         await self._persist_workflow(state, status="running")
 
-        state = await self._run_lifecycle(state)
+        try:
+            state = await self._run_lifecycle(state)
+        except Exception as exc:
+            logger.exception("Workflow %s crashed in lifecycle: %s", wf_id, exc)
+            state.status = "failed"
+            state.error = str(exc)
+
         logger.info("Workflow %s finished: %s", wf_id, state.status)
 
-        # Persist final status
+        # Always persist final status — even on crash
         await self._persist_workflow(state, status=state.status)
 
         # Emit completion event
