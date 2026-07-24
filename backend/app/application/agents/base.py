@@ -120,12 +120,22 @@ class BaseAgent(ABC, Generic[TOut]):
                     ),
                 })
 
-            raw = await ctx.llm.tool_call(
-                system=system,
-                messages=messages,
-                tools=ctx.tools,
-                response_schema=self.output_schema.model_json_schema(),
-            )
+            try:
+                raw = await ctx.llm.tool_call(
+                    system=system,
+                    messages=messages,
+                    tools=ctx.tools,
+                    response_schema=self.output_schema.model_json_schema(),
+                )
+            except Exception as llm_exc:
+                logger.error(
+                    "Agent %s LLM call failed (attempt %d): %s",
+                    self.role.value, attempt + 1, llm_exc,
+                )
+                if attempt < self.MAX_REPROMPTS:
+                    continue
+                # All attempts exhausted — return minimal fallback
+                return self._fallback_output({})
 
             latency_ms = (
                 datetime.now(UTC).timestamp() - start

@@ -43,7 +43,8 @@ class PlannerAgent(BaseAgent[Plan]):
             "task": "plan",
             "goal": input_data.get("goal", ""),
             "interpretation": input_data.get("interpretation", {}),
-            "service_catalog": input_data.get("service_catalog", []),
+            # Send only the first 25 most relevant services to avoid token overflow
+            "service_catalog": input_data.get("service_catalog", [])[:25],
             "memory_context": input_data.get("memory_context", {}),
             "optimization_proposal": input_data.get("optimization", None),
         }

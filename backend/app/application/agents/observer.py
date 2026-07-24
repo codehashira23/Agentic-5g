@@ -23,11 +23,23 @@ class ObserverAgent(BaseAgent[Observation]):
         return Observation
 
     def _build_payload(self, input_data: dict[str, Any]) -> dict[str, Any]:
+        # Slim down entity_states — only send status + load per NF, not full KPIs
+        # Full KPI data can exceed Groq's context window on llama-3.1-8b-instant
+        raw_states = input_data.get("entity_states", {})
+        slim_states = {
+            nf_id: {
+                "type": s.get("type", ""),
+                "region": s.get("region", ""),
+                "status": s.get("status", "ACTIVE"),
+                "load": round(s.get("load", 0.0), 2),
+            }
+            for nf_id, s in raw_states.items()
+        }
         return {
             "task": "observe",
             "tick": input_data.get("tick", 0),
             "goal": input_data.get("goal", ""),
-            "entity_states": input_data.get("entity_states", {}),
+            "entity_states": slim_states,
             "notable_events": input_data.get("notable_events", []),
             "memory_summary": input_data.get("memory_summary", ""),
         }

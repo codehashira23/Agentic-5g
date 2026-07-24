@@ -197,7 +197,13 @@ async def validate_node(
         "success_criteria": success_criteria,
         "current_state": {
             "tick": snapshot.tick,
-            "nf_states": snapshot.nf_states,
+            "health_pct": snapshot.health_pct,
+            # Only send summary counts, not full NF states
+            "nf_count": len(snapshot.nf_states),
+            "failed_nfs": [
+                nf_id for nf_id, s in snapshot.nf_states.items()
+                if s.get("status") == "FAILED"
+            ],
         },
         "step_results": state.results,
     }, orchestrator.make_context("observer"))
