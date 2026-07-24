@@ -166,11 +166,14 @@ async def execute_node(
     _append_trace(state, "execute", "executor", result)
 
     # Also actually invoke the service via the SEL invoker
-    if result.status == "ok":
+    # Use the plan step's service directly — don't rely on Groq to repeat it
+    service_name = current_step.get("service", result.service or "")
+    service_args = current_step.get("args", {})
+    if service_name:
         try:
             await orchestrator.invoker.invoke(
-                name=current_step.get("service", ""),
-                args=current_step.get("args", {}),
+                name=service_name,
+                args=service_args,
                 caller="executor",
                 correlation_id=state.id,
                 snapshot=state.observation.get("entity_states"),
