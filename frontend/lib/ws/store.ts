@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { WsEvent } from "@/lib/api/types.gen";
+import { queryClient } from "@/lib/query/client";
 
 const MAX_FEED = 200;
 
@@ -40,6 +41,9 @@ export const useWsStore = create<WsState>((set) => ({
       switch (e.type) {
         case "NF_FAILED": {
           const p = e.payload as { entity_id: string; cause: string };
+          // Instantly refresh topology + twin pages
+          queryClient.invalidateQueries({ queryKey: ["twin"] });
+          queryClient.invalidateQueries({ queryKey: ["topology"] });
           return {
             eventFeed: feed,
             nfStatusById: { ...state.nfStatusById, [p.entity_id]: "FAILED" },
@@ -57,6 +61,8 @@ export const useWsStore = create<WsState>((set) => ({
         }
         case "NF_RECOVERED": {
           const p = e.payload as { entity_id: string };
+          queryClient.invalidateQueries({ queryKey: ["twin"] });
+          queryClient.invalidateQueries({ queryKey: ["topology"] });
           return {
             eventFeed: feed,
             nfStatusById: { ...state.nfStatusById, [p.entity_id]: "ACTIVE" },
@@ -79,11 +85,16 @@ export const useWsStore = create<WsState>((set) => ({
             ].slice(0, 50),
           };
         }
-        case "WORKFLOW_STAGE_CHANGED":
+        case "WORKFLOW_STAGE_CHANGED": {
+          // Instantly refresh the workflows list so the stepper updates
+          queryClient.invalidateQueries({ queryKey: ["workflows"] });
           return { eventFeed: feed, activeWorkflows: state.activeWorkflows };
+        }
         case "WORKFLOW_COMPLETED":
-        case "WORKFLOW_FAILED":
+        case "WORKFLOW_FAILED": {
+          queryClient.invalidateQueries({ queryKey: ["workflows"] });
           return { eventFeed: feed };
+        }
         default:
           return { eventFeed: feed };
       }

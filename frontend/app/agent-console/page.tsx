@@ -11,11 +11,12 @@ import { TimelineStepper } from "@/components/timeline-stepper";
 import { EmptyState } from "@/components/states/empty-state";
 import type { WorkflowResponse } from "@/lib/api/types.gen";
 
-function WorkflowRow({ wf, onClick }: { wf: WorkflowResponse; onClick: () => void }) {
+function WorkflowRow({ wf, selected, onClick }: { wf: WorkflowResponse; selected: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-card-hover transition-colors"
+      className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
+        ${selected ? "bg-ai/10 border border-ai/30" : "hover:bg-card-hover"}`}
     >
       <StatusBadge status={wf.status} />
       <span className="flex-1 text-sm text-primary truncate">{wf.goal}</span>
@@ -42,22 +43,25 @@ function AgentConsoleInner() {
     refetchInterval: 3000,
   });
 
+  // Find the selected workflow to get its real stage and status
+  const selectedWf = workflows.find((w) => w.id === selectedId) ?? null;
+
   const { data: trace = [] } = useQuery({
     queryKey: keys.trace(selectedId ?? ""),
     queryFn: () =>
-      api.get<Array<{ stage: string; agent_role: string; rationale: string }>>(
+      api.get<Array<{ stage: string; agent_role: string; rationale: string; ts: string }>>(
         `/workflows/${selectedId}/trace`,
       ),
     enabled: !!selectedId,
+    // Refetch trace when workflow completes
+    refetchInterval: selectedWf?.status === "running" ? 2000 : false,
   });
 
-  const eventFeed = useWsStore((s) => s.eventFeed);
-  const liveStage = eventFeed.find(
-    (e) =>
-      e.type === "WORKFLOW_STAGE_CHANGED" &&
-      "payload" in e &&
-      (e.payload as { workflow_id?: string }).workflow_id === selectedId,
-  );
+  function selectWorkflow(id: string) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("wf", id);
+    window.history.pushState({}, "", url.toString());
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -73,11 +77,8 @@ function AgentConsoleInner() {
                 <li key={wf.id}>
                   <WorkflowRow
                     wf={wf}
-                    onClick={() => {
-                      const url = new URL(window.location.href);
-                      url.searchParams.set("wf", wf.id);
-                      window.history.pushState({}, "", url.toString());
-                    }}
+                    selected={wf.id === selectedId}
+                    onClick={() => selectWorkflow(wf.id)}
                   />
                 </li>
               ))}
@@ -87,28 +88,51 @@ function AgentConsoleInner() {
 
         {/* Detail panel */}
         <div className="lg:col-span-2 flex flex-col gap-4">
-          {selectedId ? (
+          {selectedWf ? (
             <>
               <Panel title="Lifecycle">
-                <TimelineStepper stage="observe" status="running" />
+                {/* Use real stage + status from the workflow row */}
+                <TimelineStepper
+                  stage={selectedWf.stage ?? "observe"}
+                  status={selectedWf.status ?? "running"}
+                />
+                <div className="mt-3 flex items-center gap-2">
+                  <StatusBadge status={selectedWf.status} />
+                  <span className="text-xs text-faint font-mono">{selectedWf.id}</span>
+                  <span className="text-xs text-muted truncate ml-auto">{selectedWf.goal}</span>
+                </div>
               </Panel>
               <Panel title="Reasoning Trace">
                 {trace.length === 0 ? (
-                  <EmptyState message="No trace yet." />
+                  <EmptyState message={
+                    selectedWf.status === "running"
+                      ? "Agents are working — trace will appear here as each stage completes."
+                      : "No trace recorded for this workflow."
+                  } />
                 ) : (
                   <ul className="flex flex-col gap-3">
                     {trace.map((t, i) => (
                       <li key={i} className="text-xs border-l-2 border-l-ai pl-3">
-                        <p className="font-semibold text-ai capitalize">
-                          {t.stage} — {t.agent_role}
-                        </p>
-                        <p className="text-muted mt-0.5">{t.rationale || "…"}</p>
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="font-semibold text-ai capitalize">{t.stage}</span>
+                          {t.agent_role && (
+                            <span className="text-faint">— {t.agent_role}</span>
+                          )}
+                          {t.ts && (
+                            <span className="text-faint ml-auto font-mono">
+                              {new Date(t.ts).toLocaleTimeString()}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-muted leading-relaxed">{t.rationale || "…"}</p>
                       </li>
                     ))}
                   </ul>
                 )}
               </Panel>
             </>
+          ) : selectedId ? (
+            <EmptyState message="Loading workflow…" />
           ) : (
             <EmptyState message="Select a workflow to inspect its reasoning." />
           )}

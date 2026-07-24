@@ -267,16 +267,54 @@ class NetworkTwin:
         """Build the initial topology from the registered NF set."""
         topo = Topology()
 
+        # Layout coordinates by region (x) and NF type (y)
+        # Canvas is roughly 1200 wide × 1100 tall
+        REGION_X: dict[str, float] = {
+            Region.CORE.value:    600.0,
+            Region.DELHI.value:   150.0,
+            Region.MUMBAI.value: 1050.0,
+        }
+        TYPE_Y: dict[str, float] = {
+            NFType.NRF.value:   50.0,
+            NFType.AMF.value:  180.0,
+            NFType.SMF.value:  310.0,
+            NFType.UPF.value:  440.0,
+            NFType.PCF.value:  570.0,
+            NFType.UDM.value:  570.0,
+            NFType.NWDAF.value: 700.0,
+            NFType.DCF.value:  700.0,
+            NFType.NEF.value:  830.0,
+            NFType.AF.value:   830.0,
+            NFType.GNB.value:  310.0,
+            NFType.EDGE.value: 440.0,
+        }
+        # Track how many nodes share the same (region, type) to offset duplicates
+        type_counts: dict[tuple[str, str], int] = {}
+
         # Add all NFs as nodes (excluding UEs — too many for the canvas)
         for nf in self._nfs.values():
             if nf.nf_type == NFType.UE:
                 continue
+            region_val = nf.region.value
+            type_val = nf.nf_type.value
+            key = (region_val, type_val)
+            idx = type_counts.get(key, 0)
+            type_counts[key] = idx + 1
+
+            base_x = REGION_X.get(region_val, 600.0)
+            base_y = TYPE_Y.get(type_val, 500.0)
+            # Spread duplicates horizontally by 90px
+            x = base_x + (idx * 90)
+            y = base_y
+
             node = TopologyNode(
                 id=nf.id,
                 nf_type=nf.nf_type,
                 region=nf.region,
                 status=nf.status,
                 load=nf.load,
+                x=x,
+                y=y,
             )
             topo = topo.add_node(node)
 

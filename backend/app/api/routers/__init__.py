@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from .analytics import router as analytics_router
 from .health import router as health_router
 from .logs import router as logs_router
 from .models import router as models_router
@@ -17,6 +18,7 @@ from .ws import router as ws_router
 
 api_router = APIRouter()
 api_router.include_router(health_router, tags=["meta"])
+api_router.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
 api_router.include_router(services_router, prefix="/services", tags=["services"])
 api_router.include_router(twin_router, prefix="/twin", tags=["twin"])
 api_router.include_router(topology_router, prefix="/topology", tags=["topology"])
