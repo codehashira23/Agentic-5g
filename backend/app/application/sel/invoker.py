@@ -144,7 +144,11 @@ class ServiceInvoker:
         # 4. Dispatch to twin
         # ------------------------------------------------------------------
         try:
-            result_data = self._twin.apply_command(name, {**args, "target": args.get("target", "")})
+            # Normalise target arg — Groq may use target_node_id or target
+            dispatch_args = dict(args)
+            if "target_node_id" in dispatch_args and "target" not in dispatch_args:
+                dispatch_args["target"] = dispatch_args["target_node_id"]
+            result_data = self._twin.apply_command(name, {**dispatch_args, "target": dispatch_args.get("target", "")})
             status = ServiceStatus.OK
             error = None
         except Exception as exc:

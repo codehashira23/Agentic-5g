@@ -148,8 +148,15 @@ class EdgeNode(NetworkFunction):
                 raise self._unsupported(service_name)
 
     def _handle_deploy(self, args: dict[str, Any]) -> dict[str, Any]:
-        model_id: str = args["model_id"]
-        name: str = args.get("name", model_id)
+        # Accept common arg aliases Groq might use
+        model_id: str = (
+            args.get("model_id")
+            or args.get("id")
+            or args.get("model_name")
+            or args.get("name")
+            or "model_default"
+        )
+        name: str = args.get("name") or args.get("model_name") or model_id
         self._hosted_models[model_id] = {"name": name, "state": "deployed"}
         return {
             "model_id": model_id,

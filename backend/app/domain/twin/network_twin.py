@@ -258,7 +258,8 @@ class NetworkTwin:
 
         if nf_type_value is None:
             if service_name.startswith("aimle."):
-                nf_type_value = "NWDAF"
+                # aimle.model.deploy targets Edge nodes — prefer the target arg
+                nf_type_value = "Edge"
             else:
                 raise ValueError(
                     f"Cannot infer owner for service '{service_name}'"

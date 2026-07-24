@@ -107,7 +107,12 @@ _ROLE_PROMPTS: dict[str, str] = {
         "At Reason stage, return EXACTLY:\n"
         '{"rationale": "string", "objective": "string", "targets": [], '
         '"constraints": [], "success_criteria": ["string"]}\n'
-        "Use only services in the provided catalog. Return raw JSON only."
+        "Use only services in the provided catalog. Return raw JSON only.\n"
+        "IMPORTANT service arg schemas:\n"
+        '  aimle.model.deploy: {"model_id": "string", "name": "string", "target": "edge_node_id"}\n'
+        '  nrf.discover: {"nf_type": "string", "region": "string"}\n'
+        '  upf.loadbalance.apply: {"target": "upf_id", "weight": 0.5}\n'
+        '  nwdaf.analytics.congestion.subscribe: {"target": "node_id", "threshold_ms": 20}\n'
     ),
     "executor@v1": (
         "You are the Executor. Execute the current plan step. "
