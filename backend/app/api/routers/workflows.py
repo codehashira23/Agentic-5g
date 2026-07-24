@@ -6,10 +6,12 @@ Owning docs: 09-api.md §9.2
 from __future__ import annotations
 
 import asyncio
+import uuid
 from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Response
+from sqlalchemy import select, text
 
 from app.api.deps import get_container
 from app.api.schemas.workflow import (
@@ -19,8 +21,21 @@ from app.api.schemas.workflow import (
     WorkflowResponse,
 )
 from app.infrastructure.container import Container
+from app.infrastructure.db.models import WorkflowRow, WorkflowTraceRow
 
 router = APIRouter()
+
+
+def _row_to_response(row: WorkflowRow) -> WorkflowResponse:
+    return WorkflowResponse(
+        id=row.id,
+        goal=row.goal,
+        status=row.status,
+        stage=row.stage,
+        created_at=row.created_at,
+        correlation_id=row.correlation_id,
+        trigger=row.trigger,
+    )
 
 
 @router.post("", status_code=201, response_model=WorkflowResponse)
@@ -35,21 +50,15 @@ async def create_workflow(
     Progress streams via WebSocket (correlation_id = workflow id).
     """
     now = datetime.now(UTC).isoformat()
-
-    # Schedule the workflow as a background asyncio task (AP5 — async)
-    task = asyncio.create_task(
-        c.engine.start(goal=body.goal, trigger="user")
-    )
-    # Store task so it isn't garbage-collected
-    getattr(c, "_active_tasks", []).append(task) if hasattr(c, "_active_tasks") \
-        else setattr(c, "_active_tasks", [task])
-
-    # We don't have a workflow id until start() runs, so we return a
-    # placeholder immediately — in production the engine writes the row
-    # and the WS streams updates.  For the integration test we await directly.
-    # For the real async path, the client polls GET /workflows or watches WS.
-    import uuid
     wf_id = f"wf_{uuid.uuid4().hex[:8]}"
+
+    # Schedule the workflow as a background asyncio task
+    task = asyncio.create_task(
+        c.engine.start(goal=body.goal, trigger="user", correlation_id=wf_id)
+    )
+    if not hasattr(c, "_active_tasks"):
+        c._active_tasks = []  # type: ignore[attr-defined]
+    c._active_tasks.append(task)  # type: ignore[attr-defined]
 
     return WorkflowResponse(
         id=wf_id,
@@ -68,7 +77,15 @@ async def list_workflows(
     limit: int = 20,
     c: Container = Depends(get_container),
 ) -> list[WorkflowResponse]:
-    return []   # served from DB in a later integration; empty for now
+    async with c.db.session() as session:
+        stmt = select(WorkflowRow).order_by(
+            text("created_at DESC")
+        ).limit(limit)
+        if status:
+            stmt = stmt.where(WorkflowRow.status == status)
+        result = await session.execute(stmt)
+        rows = result.scalars().all()
+    return [_row_to_response(r) for r in rows]
 
 
 @router.get("/{workflow_id}", response_model=WorkflowResponse)
@@ -76,7 +93,14 @@ async def get_workflow(
     workflow_id: str,
     c: Container = Depends(get_container),
 ) -> WorkflowResponse:
-    raise HTTPException(404, detail=f"Workflow '{workflow_id}' not found")
+    async with c.db.session() as session:
+        result = await session.execute(
+            select(WorkflowRow).where(WorkflowRow.id == workflow_id)
+        )
+        row = result.scalar_one_or_none()
+    if row is None:
+        raise HTTPException(404, detail=f"Workflow '{workflow_id}' not found")
+    return _row_to_response(row)
 
 
 @router.get("/{workflow_id}/trace", response_model=list[TraceEntryResponse])
@@ -84,7 +108,22 @@ async def get_trace(
     workflow_id: str,
     c: Container = Depends(get_container),
 ) -> list[TraceEntryResponse]:
-    return []
+    async with c.db.session() as session:
+        result = await session.execute(
+            select(WorkflowTraceRow)
+            .where(WorkflowTraceRow.workflow_id == workflow_id)
+            .order_by(text("ts ASC"))
+        )
+        rows = result.scalars().all()
+    return [
+        TraceEntryResponse(
+            stage=r.stage,
+            agent_role=r.agent_role or "",
+            rationale=r.rationale or "",
+            ts=r.ts,
+        )
+        for r in rows
+    ]
 
 
 @router.post("/{workflow_id}/control")
