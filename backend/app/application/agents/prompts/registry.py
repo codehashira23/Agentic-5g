@@ -105,8 +105,10 @@ _ROLE_PROMPTS: dict[str, str] = {
         "  - Edge failure → use aimle.model.retire then aimle.model.deploy with args: {target: backup_edge_id}\n"
         "Return EXACTLY this JSON:\n"
         '{"rationale":"<why these steps, what outcome is expected>","steps":[{"index":0,"service":"<service>","args":{<specific args>},"depends_on":[],"success_criterion":"<measurable>"}],"success_criteria":["<top-level criterion>"]}\n'
-        "CRITICAL: Always use real node ids (e.g. upf_delhi_1, edge_delhi_1, nrf_standby_1). "
-        "Use only services from the provided catalog. Return raw JSON only. No markdown."
+        "CRITICAL RULES:\n"
+        "  1. depends_on MUST be a list of integers (step index numbers), NEVER service names. Use [] for no dependencies.\n"
+        "  2. Always use real node ids (e.g. upf_delhi_1, edge_delhi_1, nrf_standby_1).\n"
+        "  3. Use only services from the provided catalog. Return raw JSON only. No markdown."
     ),
     "executor@v1": (
         "You are a 5G network executor agent. Execute the given plan step.\n"

@@ -133,16 +133,30 @@ class Step(BaseModel):
     model_config = {"frozen": True}
 
     index: int = Field(..., ge=0)
-    service: str = Field(..., description="Dotted service name, e.g. 'nrf.discover'")
+    service: str = Field(default="", description="Dotted service name, e.g. 'nrf.discover'")
     args: dict[str, Any] = Field(default_factory=dict)
     depends_on: list[int] = Field(
         default_factory=list,
-        description="Indices of steps that must complete before this one",
+        description="Indices (integers) of steps that must complete before this one",
     )
     success_criterion: str = Field(
         default="",
         description="How the Executor verifies this step succeeded",
     )
+
+    @classmethod
+    def model_validate(cls, obj: Any, **kwargs: Any) -> "Step":
+        """Coerce depends_on entries to int — Groq sometimes sends service names."""
+        if isinstance(obj, dict) and "depends_on" in obj:
+            raw = obj.get("depends_on") or []
+            cleaned: list[int] = []
+            for item in raw:
+                try:
+                    cleaned.append(int(item))
+                except (ValueError, TypeError):
+                    pass  # drop non-integer entries silently
+            obj = {**obj, "depends_on": cleaned}
+        return super().model_validate(obj, **kwargs)
 
 
 class Plan(AgentOutput):
