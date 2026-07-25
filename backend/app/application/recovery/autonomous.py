@@ -23,7 +23,8 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 # Cooldown: don't trigger recovery for the same NF within this many seconds
-_COOLDOWN_S = 30
+# Set to 5s so repeated test injections still trigger recovery
+_COOLDOWN_S = 5
 _last_triggered: dict[str, float] = {}
 
 
@@ -115,9 +116,14 @@ class AutonomousRecoveryHandler:
         now = time.monotonic()
         last = _last_triggered.get(nf_id, 0.0)
         if now - last < _COOLDOWN_S:
+            remaining = _COOLDOWN_S - (now - last)
+            print(
+                f"[AutonomousRecovery] {nf_id} cooldown active — {remaining:.0f}s remaining, skipping",
+                flush=True,
+            )
             logger.info(
                 "AutonomousRecovery: skipping %s — cooldown active (%.0fs remaining)",
-                nf_id, _COOLDOWN_S - (now - last),
+                nf_id, remaining,
             )
             return
         _last_triggered[nf_id] = now
