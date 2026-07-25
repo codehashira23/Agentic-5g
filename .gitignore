@@ -9,7 +9,8 @@ scratch/
 notes/
 learning/
 *.scratch.md
-docs/
+project docs/
+
 
 # --- Secrets & environment ---
 .env
