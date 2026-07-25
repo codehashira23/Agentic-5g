@@ -48,7 +48,7 @@ function KgNode({ data }: { data: { label: string; type: string; status: string;
   return (
     <div
       style={{
-        background: data.selected ? `${color}22` : "#151b23",
+        background: data.selected ? `${color}33` : "rgba(24, 37, 68, 0.92)",
         border: `2px solid ${data.selected ? color : border}`,
         borderRadius: 10,
         padding: "6px 10px",
@@ -60,10 +60,10 @@ function KgNode({ data }: { data: { label: string; type: string; status: string;
     >
       <Handle type="target" position={Position.Left} style={{ opacity: 0 }} />
       <div style={{ fontWeight: 700, fontSize: 11, color, marginBottom: 2 }}>{data.type}</div>
-      <div style={{ fontSize: 9, color: "#6b7280", fontFamily: "monospace" }}>{data.label}</div>
+      <div style={{ fontSize: 9, color: "#aebdd4", fontFamily: "monospace" }}>{data.label}</div>
       <div style={{ fontSize: 9, color: border, marginTop: 2 }}>{data.status}</div>
       {data.load > 0 && (
-        <div style={{ marginTop: 3, height: 3, background: "#1f2937", borderRadius: 2, overflow: "hidden" }}>
+        <div style={{ marginTop: 3, height: 3, background: "#2a3c5e", borderRadius: 2, overflow: "hidden" }}>
           <div style={{ width: `${Math.min(data.load * 100, 100)}%`, height: "100%", background: color, borderRadius: 2 }} />
         </div>
       )}
@@ -251,8 +251,8 @@ export default function KnowledgeGraphPage() {
       source: l.src_id,
       target: l.dst_id,
       label: REL_LABELS[l.ref_point] ?? l.ref_point,
-      style: { stroke: "#1f2937", strokeWidth: 1.5 },
-      labelStyle: { fill: "#4b5563", fontSize: 9 },
+      style: { stroke: "#4a6294", strokeWidth: 1.5 },
+      labelStyle: { fill: "#8698b0", fontSize: 9 },
       animated: false,
     }));
   }, [topo]);
@@ -314,7 +314,7 @@ export default function KnowledgeGraphPage() {
               minZoom={0.3}
               maxZoom={2}
             >
-              <Background color="#1f2937" gap={20} />
+              <Background color="#2a3c5e" gap={20} />
               <Controls />
             </ReactFlow>
           )}

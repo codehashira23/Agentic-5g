@@ -82,11 +82,11 @@ function KpiChart({
         <div style={{ height: 110 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="tick" tick={{ fill: "#4b5563", fontSize: 9 }} />
-              <YAxis tick={{ fill: "#4b5563", fontSize: 9 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#2a3c5e" />
+              <XAxis dataKey="tick" tick={{ fill: "#8698b0", fontSize: 9 }} />
+              <YAxis tick={{ fill: "#8698b0", fontSize: 9 }} />
               <Tooltip
-                contentStyle={{ background: "#151b23", border: "1px solid #1f2937", fontSize: 11 }}
+                contentStyle={{ background: "rgba(24,37,68,0.96)", border: "1px solid #3d5478", borderRadius: 8, fontSize: 11 }}
                 labelFormatter={(v) => `Tick ${v}`}
                 formatter={((v: number) => `${v.toFixed(3)}${kpi.unit ? " " + kpi.unit : ""}`) as any}
               />

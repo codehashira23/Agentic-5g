@@ -10,10 +10,10 @@ interface PanelProps {
 export function Panel({ title, actions, children, className = "", accent }: PanelProps) {
   return (
     <div
-      className={`bg-card border border-border rounded-xl overflow-hidden shadow-1 ${accent ?? ""} ${className}`}
+      className={`bg-card backdrop-blur-xl border border-border rounded-xl overflow-hidden shadow-1 ${accent ?? ""} ${className}`}
     >
       {(title || actions) && (
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card-hover/40">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-white/[0.02]">
           {title && (
             <h3 className="text-sm font-semibold text-primary tracking-tight">{title}</h3>
           )}

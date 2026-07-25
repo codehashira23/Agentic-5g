@@ -38,13 +38,14 @@ function toNodes(nodes: TopologyResponse["nodes"], statusMap: Record<string, str
       },
       data: { label: n.id, type: n.type, status },
       style: {
-        background: "#151b23",
+        background: "rgba(24, 37, 68, 0.9)",
         border: `2px solid ${color}`,
         borderRadius: 8,
         padding: "6px 10px",
-        color: "#e5e7eb",
+        color: "#f5f8fc",
         fontSize: 11,
         minWidth: 110,
+        boxShadow: `0 0 12px -4px ${color}`,
       },
       // Custom label: type bold + id small
       type: "default",
@@ -58,8 +59,8 @@ function toEdges(links: TopologyResponse["links"]): Edge[] {
     source: lk.src_id,
     target: lk.dst_id,
     label: lk.ref_point || undefined,
-    style: { stroke: "#374151" },
-    labelStyle: { fill: "#6b7280", fontSize: 10 },
+    style: { stroke: "#4a6294" },
+    labelStyle: { fill: "#bccbe0", fontSize: 10 },
   }));
 }
 
@@ -120,7 +121,7 @@ export default function TopologyPage() {
           <span className="font-bold text-xs" style={{ color: STATUS_COLOR[n.data.status] ?? "#e5e7eb" }}>
             {n.data.type}
           </span>
-          <span className="text-[9px] text-gray-500 font-mono truncate max-w-[90px]">
+          <span className="text-[9px] font-mono truncate max-w-[90px]" style={{ color: "#aebdd4" }}>
             {n.data.label}
           </span>
         </div>
@@ -138,7 +139,7 @@ export default function TopologyPage() {
       >
         <div className="flex-1" style={{ minHeight: 460 }}>
           <ReactFlow nodes={nodes} edges={edges} fitView>
-            <Background color="#1f2937" />
+            <Background color="#2a3c5e" />
             <Controls />
           </ReactFlow>
         </div>

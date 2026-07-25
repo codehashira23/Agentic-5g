@@ -57,7 +57,7 @@ const NAV = [
 export function NavRail() {
   const pathname = usePathname();
   return (
-    <aside className="w-56 min-h-screen bg-panel border-r border-border flex flex-col shrink-0">
+    <aside className="w-56 min-h-screen bg-panel backdrop-blur-xl border-r border-border flex flex-col shrink-0">
       {/* Logo */}
       <div className="px-4 pt-5 pb-4 border-b border-border">
         <div className="flex items-center gap-2.5">

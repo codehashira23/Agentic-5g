@@ -207,7 +207,7 @@ function NfCard({
                   dot={false}
                 />
                 <Tooltip
-                  contentStyle={{ background: "#151b23", border: "1px solid #1f2937", fontSize: 10 }}
+                  contentStyle={{ background: "rgba(24,37,68,0.96)", border: "1px solid #3d5478", borderRadius: 8, fontSize: 10 }}
                   formatter={((v: number) => `${(v * 100).toFixed(0)}% load`) as any}
                   labelFormatter={() => ""}
                 />

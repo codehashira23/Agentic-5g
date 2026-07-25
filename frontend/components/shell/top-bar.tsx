@@ -40,7 +40,7 @@ export function TopBar() {
   }
 
   return (
-    <header className="shrink-0 border-b border-border bg-panel/80 backdrop-blur-sm">
+    <header className="shrink-0 border-b border-border bg-panel backdrop-blur-xl">
       <div className="flex items-center px-5 gap-3 h-14">
         {/* Intent input */}
         <form onSubmit={handleSubmit} className="flex-1 flex items-center gap-2">

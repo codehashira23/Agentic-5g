@@ -18,7 +18,7 @@ export function StatCard({ title, value, unit, delta, status = "ok", icon }: Sta
   const cfg = STATUS_CONFIG[status];
   return (
     <div
-      className={`relative bg-gradient-to-br ${cfg.bg} to-card border ${cfg.border}
+      className={`relative bg-gradient-to-br ${cfg.bg} to-card backdrop-blur-xl border ${cfg.border}
                   rounded-xl p-4 flex flex-col gap-2 overflow-hidden shadow-1`}
     >
       {/* Background decoration */}
