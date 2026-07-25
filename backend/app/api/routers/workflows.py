@@ -131,6 +131,48 @@ async def get_trace(
     ]
 
 
+@router.get("/{workflow_id}/summary")
+async def get_summary(
+    workflow_id: str,
+    c: Container = Depends(get_container),
+) -> dict[str, Any]:
+    """Return the documentation agent's summary for a completed workflow."""
+    async with c.db.session() as session:
+        # Get the complete trace entry (documentation stage)
+        result = await session.execute(
+            select(WorkflowTraceRow)
+            .where(WorkflowTraceRow.workflow_id == workflow_id)
+            .where(WorkflowTraceRow.stage == "complete")
+            .limit(1)
+        )
+        row = result.scalar_one_or_none()
+        # Also get the workflow itself
+        wf_result = await session.execute(
+            select(WorkflowRow).where(WorkflowRow.id == workflow_id)
+        )
+        wf = wf_result.scalar_one_or_none()
+    if wf is None:
+        raise HTTPException(404, detail=f"Workflow '{workflow_id}' not found")
+    import json as _json
+    structured = {}
+    if row and row.structured_json:
+        try:
+            structured = _json.loads(row.structured_json)
+        except Exception:
+            pass
+    return {
+        "workflow_id": workflow_id,
+        "goal": wf.goal,
+        "status": wf.status,
+        "stage": wf.stage,
+        "created_at": wf.created_at,
+        "narrative": structured.get("narrative") or row.rationale if row else "",
+        "outcome": structured.get("outcome") or wf.status,
+        "evidence": structured.get("evidence") or [],
+        "lessons": structured.get("lessons") or [],
+    }
+
+
 @router.post("/{workflow_id}/control")
 async def control_workflow(
     workflow_id: str,

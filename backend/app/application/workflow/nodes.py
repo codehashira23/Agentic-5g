@@ -98,9 +98,11 @@ async def reason_node(
     state.stage = "reason"
 
     from app.domain.agents.models import Interpretation
+    # Pass observation (which now has real KPI data) into the reason payload
     interp: Interpretation = await orchestrator.interpreter.run({
         "goal": state.goal,
         "observation": state.observation,
+        "network_state": state.observation.get("entity_states", {}),
         "memory_context": state.memory_context,
     }, orchestrator.make_context("planner"))
 
@@ -230,9 +232,19 @@ async def complete_node(
     summary: WorkflowSummary = await orchestrator.documenter.run({
         "workflow_id": state.id,
         "goal": state.goal,
-        "trace": [t.model_dump() for t in state.trace],
-        "step_results": state.results,
-        "before_snapshot": state.before_snapshot,
+        "trace": [
+            {"stage": t.stage, "agent_role": t.agent_role, "rationale": t.rationale}
+            for t in state.trace
+        ],
+        "step_results": state.results,  # actual service call outcomes
+        "service_calls": [
+            r for r in state.results
+            if r.get("service") or r.get("step_index") is not None
+        ],
+        "before_snapshot": {
+            "tick": state.before_snapshot.get("tick", 0),
+            "health_pct": state.before_snapshot.get("health_pct", 1.0),
+        },
         "after_snapshot": {
             "tick": after_snapshot.tick,
             "health_pct": after_snapshot.health_pct,

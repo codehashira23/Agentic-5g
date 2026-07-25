@@ -23,6 +23,7 @@ class InterpretationAgent(BaseAgent[Interpretation]):
             "task": "reason",
             "goal": input_data.get("goal", ""),
             "observation": input_data.get("observation", {}),
+            "network_state": input_data.get("network_state", {}),
             "memory_context": input_data.get("memory_context", {}),
         }
 

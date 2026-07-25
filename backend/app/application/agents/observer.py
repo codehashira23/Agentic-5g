@@ -23,23 +23,55 @@ class ObserverAgent(BaseAgent[Observation]):
         return Observation
 
     def _build_payload(self, input_data: dict[str, Any]) -> dict[str, Any]:
-        # Slim down entity_states — only send status + load per NF, not full KPIs
-        # Full KPI data can exceed Groq's context window on llama-3.1-8b-instant
         raw_states = input_data.get("entity_states", {})
-        slim_states = {
-            nf_id: {
-                "type": s.get("type", ""),
-                "region": s.get("region", ""),
+        goal = input_data.get("goal", "").lower()
+
+        # Determine which regions are relevant to the goal
+        relevant_regions: set[str] = set()
+        if "delhi" in goal:
+            relevant_regions.add("Delhi")
+        if "mumbai" in goal:
+            relevant_regions.add("Mumbai")
+        if "core" in goal or not relevant_regions:
+            relevant_regions.update({"Delhi", "Mumbai", "Core"})
+
+        # Only include NFs relevant to the goal (UPF, Edge, gNB in target region)
+        # Include actual KPI values so Groq can reference real numbers
+        slim_states: dict[str, Any] = {}
+        for nf_id, s in raw_states.items():
+            region = s.get("region", "")
+            nf_type = s.get("type", "")
+            if region not in relevant_regions:
+                continue
+            # Include KPIs for data-plane nodes that matter for the goal
+            entry: dict[str, Any] = {
+                "type": nf_type,
+                "region": region,
                 "status": s.get("status", "ACTIVE"),
                 "load": round(s.get("load", 0.0), 2),
             }
-            for nf_id, s in raw_states.items()
-        }
+            kpis = s.get("kpis", {})
+            if kpis and nf_type in ("UPF", "gNB", "Edge", "NWDAF"):
+                kpi_summary: dict[str, Any] = {}
+                for kpi_name, kpi_data in kpis.items():
+                    if isinstance(kpi_data, dict):
+                        val = kpi_data.get("current", 0)
+                        breaching = kpi_data.get("breaching", False)
+                        kpi_summary[kpi_name] = {
+                            "value": round(float(val), 3),
+                            "breaching": breaching,
+                        }
+                    else:
+                        kpi_summary[kpi_name] = round(float(kpi_data), 3)
+                if kpi_summary:
+                    entry["kpis"] = kpi_summary
+            slim_states[nf_id] = entry
+
         return {
             "task": "observe",
             "tick": input_data.get("tick", 0),
             "goal": input_data.get("goal", ""),
-            "entity_states": slim_states,
+            "network_state": slim_states,
             "notable_events": input_data.get("notable_events", []),
             "memory_summary": input_data.get("memory_summary", ""),
         }

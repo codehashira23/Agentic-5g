@@ -78,20 +78,28 @@ already met, take no action and say so.
 # ---------------------------------------------------------------------------
 _ROLE_PROMPTS: dict[str, str] = {
     "observer@v1": (
-        "You are a 5G network observer agent. Analyze the network state and return JSON.\n"
-        "Return EXACTLY this JSON structure with no extra text:\n"
-        '{"rationale":"<1-2 sentences about network state>","tick":<integer>,"health_pct":<0.0-1.0>,"active_workflows":0,"entity_states":{},"notable_events":[],"memory_summary":""}\n'
+        "You are a 5G network observer agent analyzing a real-time Digital Twin.\n"
+        "You receive actual KPI measurements from network functions.\n"
+        "For observe task: analyze the network_state and reference SPECIFIC values in your rationale.\n"
+        "Mention actual latency_ms values, load percentages, which nodes are ACTIVE/DEGRADED/FAILED.\n"
+        "Return EXACTLY this JSON (no markdown, no extra text):\n"
+        '{"rationale":"<2-3 sentences referencing specific NF ids, KPI values like latency_ms=8.4ms, load=24%, and what it means for the goal>","tick":<integer>,"health_pct":<0.0-1.0>,"active_workflows":0,"entity_states":{},"notable_events":[],"memory_summary":""}\n'
+        "Example rationale: 'upf_delhi_1 is ACTIVE with latency_ms=8.4 (threshold 20ms) and load=24%. "
+        "edge_delhi_1 is ACTIVE with 0 hosted models and compute_load=0.0. "
+        "Network is healthy and ready for model deployment.'\n"
         "For validate task return EXACTLY:\n"
-        '{"rationale":"<assessment>","verdict":"pass","criteria":[]}\n'
-        "Return raw JSON only. No markdown."
+        '{"rationale":"<reference step_results: which service was called, what it returned, whether success criteria are met>","verdict":"pass","criteria":[]}\n'
+        "Return raw JSON only."
     ),
     "planner@v1": (
-        "You are a 5G network planning agent. Given a goal, produce a plan.\n"
-        "For reason task return EXACTLY this JSON:\n"
-        '{"rationale":"<why this goal matters>","objective":"<what to achieve>","targets":["edge_delhi_1"],"constraints":[],"success_criteria":["model deployed successfully"]}\n'
-        "For plan task return EXACTLY this JSON:\n"
-        '{"rationale":"<planning rationale>","steps":[{"index":0,"service":"aimle.model.deploy","args":{"model_id":"congestion_v1","name":"congestion_v1","target":"edge_delhi_1"},"depends_on":[],"success_criterion":"model deployed"}],"success_criteria":["model deployed successfully"]}\n'
-        "IMPORTANT: For deploy goals use service aimle.model.deploy with args: model_id, name, target (edge node id).\n"
+        "You are a 5G network planning agent. You receive real KPI data and must produce specific, actionable plans.\n"
+        "For reason task: explain WHY the goal is needed based on the actual KPI values observed. Reference specific node ids and metric values.\n"
+        "Return EXACTLY this JSON:\n"
+        '{"rationale":"<2-3 sentences: what KPI problem or opportunity justifies this goal, referencing real values>","objective":"<specific action to take>","targets":["<target node id>"],"constraints":[],"success_criteria":["<measurable criterion>"]}\n'
+        "For plan task: produce a specific ordered plan. For deploy goals, ALWAYS use aimle.model.deploy.\n"
+        "Return EXACTLY this JSON:\n"
+        '{"rationale":"<why these steps, what outcome is expected>","steps":[{"index":0,"service":"aimle.model.deploy","args":{"model_id":"congestion_v1","name":"congestion_v1","target":"edge_delhi_1","target_node_id":"edge_delhi_1"},"depends_on":[],"success_criterion":"congestion_v1 deployed on edge_delhi_1"}],"success_criteria":["congestion_v1 deployed and active on edge_delhi_1"]}\n'
+        "CRITICAL: target node id must be the actual edge node id from the goal region (edge_delhi_1 or edge_mumbai_1).\n"
         "Use only services from the provided catalog. Return raw JSON only. No markdown."
     ),
     "executor@v1": (
@@ -114,9 +122,13 @@ _ROLE_PROMPTS: dict[str, str] = {
         "with a clear explanation. Output RecoveryPlan and CompensationResults."
     ),
     "documentation@v1": (
-        "You are a documentation agent. Summarize what happened in the workflow.\n"
+        "You are a documentation agent. Write a specific, factual summary of what happened.\n"
+        "You receive the workflow trace and step_results. Reference actual service names, node ids, and outcomes.\n"
         "Return EXACTLY this JSON:\n"
-        '{"rationale":"<summary>","workflow_id":"<id>","goal":"<goal>","outcome":"success","narrative":"<2-3 sentences>","evidence":[],"lessons":[],"kg_deltas":[]}\n'
+        '{"rationale":"<1-2 sentences summarizing what was done and the result>","workflow_id":"<id>","goal":"<goal>","outcome":"success","narrative":"<2-3 specific sentences: what service was called, on which node, with what result — reference actual ids and values>","evidence":["<specific fact 1>","<specific fact 2>"],"lessons":["<what was learned>"],"kg_deltas":[]}\n'
+        "Example narrative: 'The congestion detection model (congestion_v1) was successfully deployed to edge_delhi_1 "
+        "via aimle.model.deploy. The Delhi Edge node now hosts 1 active model. "
+        "NWDAF analytics subscription was configured with a 20ms latency threshold.'\n"
         "Return raw JSON only. No markdown."
     ),
     "memory@v1": (
