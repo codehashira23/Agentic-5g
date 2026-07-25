@@ -168,8 +168,9 @@ class BaseAgent(ABC, Generic[TOut]):
         inferred_steps = raw.get("steps") or []
         if not inferred_steps and goal:
             goal_lower = goal.lower()
+
             if "deploy" in goal_lower and "edge" in goal_lower:
-                # Determine target region
+                # Scenario A: deploy model to edge
                 target = "edge_delhi_1"
                 if "mumbai" in goal_lower:
                     target = "edge_mumbai_1"
@@ -190,9 +191,44 @@ class BaseAgent(ABC, Generic[TOut]):
                     "depends_on": [],
                     "success_criterion": f"model {model_id} deployed on {target}",
                 }]
+            elif "upf" in goal_lower and ("fail" in goal_lower or "load balanc" in goal_lower):
+                # Scenario B: UPF failure — load balance
+                upf_id = "upf_delhi_1"
+                if "mumbai" in goal_lower:
+                    upf_id = "upf_mumbai_1"
+                inferred_steps = [{
+                    "index": 0,
+                    "service": "upf.loadbalance.apply",
+                    "args": {"target": upf_id, "weight": 0.5},
+                    "depends_on": [],
+                    "success_criterion": f"load balanced away from {upf_id}",
+                }]
+            elif "nrf" in goal_lower and ("fail" in goal_lower or "promot" in goal_lower or "standby" in goal_lower):
+                # Scenario C: NRF failure — promote standby
+                inferred_steps = [{
+                    "index": 0,
+                    "service": "nrf.promote_standby",
+                    "args": {"standby_id": "nrf_standby_1"},
+                    "depends_on": [],
+                    "success_criterion": "nrf_standby_1 promoted to active",
+                }]
+            elif "recover" in goal_lower or "failed" in goal_lower:
+                # Generic recovery — try to get NF id from goal
+                import re as _re
+                nf_match = _re.search(r'(\w+_\w+_\d+)', goal_lower)
+                nf_id = nf_match.group(1) if nf_match else "unknown_nf"
+                inferred_steps = [{
+                    "index": 0,
+                    "service": "twin.snapshot",
+                    "args": {},
+                    "depends_on": [],
+                    "success_criterion": "recovery assessment complete",
+                }]
+
+            if inferred_steps:
                 logger.info(
-                    "Fallback plan: inferred deploy step %s → %s from goal",
-                    model_id, target,
+                    "Fallback plan: inferred steps from goal '%s'",
+                    goal[:60],
                 )
 
         defaults: dict[str, Any] = {

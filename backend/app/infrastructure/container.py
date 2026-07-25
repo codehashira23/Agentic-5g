@@ -172,6 +172,18 @@ async def build_container(settings: Any | None = None) -> Container:
     orchestrator = AgentOrchestrator(llm, invoker, registry, twin_service)
     engine = WorkflowEngine(orchestrator, bus=bus, writer=writer, db=db)
 
+    # --- Autonomous recovery: subscribe to NF_FAILED events ---
+    # When any NF fails, automatically start a recovery workflow
+    from app.application.recovery.autonomous import AutonomousRecoveryHandler
+    recovery_handler = AutonomousRecoveryHandler(engine)
+    bus.subscribe(
+        event_types=["NF_FAILED"],
+        handler=recovery_handler.handle,
+        lossless=True,   # never drop fault events
+        queue_size=100,
+    )
+    print("[Agent5G] Autonomous recovery handler registered for NF_FAILED events", flush=True)
+
     # --- Scheduler wired to twin ---
     async def _on_tick(evt: Any) -> None:
         await twin_service.on_tick(evt.tick)

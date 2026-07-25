@@ -96,10 +96,16 @@ _ROLE_PROMPTS: dict[str, str] = {
         "For reason task: explain WHY the goal is needed based on the actual KPI values observed. Reference specific node ids and metric values.\n"
         "Return EXACTLY this JSON:\n"
         '{"rationale":"<2-3 sentences: what KPI problem or opportunity justifies this goal, referencing real values>","objective":"<specific action to take>","targets":["<target node id>"],"constraints":[],"success_criteria":["<measurable criterion>"]}\n'
-        "For plan task: produce a specific ordered plan. For deploy goals, ALWAYS use aimle.model.deploy.\n"
+        "For plan task: produce a specific ordered plan.\n"
+        "Service selection rules:\n"
+        "  - Deploy model to edge → use aimle.model.deploy with args: {model_id, name, target: edge_node_id, target_node_id: edge_node_id}\n"
+        "  - UPF failure/load-balance → use upf.loadbalance.apply with args: {target: upf_id, weight: 0.5}\n"
+        "  - NRF failure → use nrf.promote_standby with args: {standby_id: 'nrf_standby_1'}\n"
+        "  - gNB failure → use gnb.reroute with args: {target: gnb_id, destination: alternate_gnb_id}\n"
+        "  - Edge failure → use aimle.model.retire then aimle.model.deploy with args: {target: backup_edge_id}\n"
         "Return EXACTLY this JSON:\n"
-        '{"rationale":"<why these steps, what outcome is expected>","steps":[{"index":0,"service":"aimle.model.deploy","args":{"model_id":"congestion_v1","name":"congestion_v1","target":"edge_delhi_1","target_node_id":"edge_delhi_1"},"depends_on":[],"success_criterion":"congestion_v1 deployed on edge_delhi_1"}],"success_criteria":["congestion_v1 deployed and active on edge_delhi_1"]}\n'
-        "CRITICAL: target node id must be the actual edge node id from the goal region (edge_delhi_1 or edge_mumbai_1).\n"
+        '{"rationale":"<why these steps, what outcome is expected>","steps":[{"index":0,"service":"<service>","args":{<specific args>},"depends_on":[],"success_criterion":"<measurable>"}],"success_criteria":["<top-level criterion>"]}\n'
+        "CRITICAL: Always use real node ids (e.g. upf_delhi_1, edge_delhi_1, nrf_standby_1). "
         "Use only services from the provided catalog. Return raw JSON only. No markdown."
     ),
     "executor@v1": (

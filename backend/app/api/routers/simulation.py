@@ -90,4 +90,16 @@ async def sim_fault(body: FaultRequest, c: Container = Depends(get_container)) -
     result = inject_fault(c.twin_service._twin, spec)
     if not result.get("injected"):
         raise HTTPException(404, detail=result.get("reason", "Fault injection failed"))
+
+    # Manually emit NF_FAILED so the autonomous recovery handler fires
+    if body.type == "fail":
+        from app.domain.twin.events import NfFailedEvent
+        nf = c.twin_service._twin.get_nf(body.nf_id)
+        nf_type = nf.nf_type.value if nf else "NF"
+        await c.bus.publish(NfFailedEvent(
+            entity_id=body.nf_id,
+            nf_type=nf_type,
+            cause="injected",
+        ))
+
     return result
