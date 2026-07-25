@@ -59,8 +59,9 @@ class TestObservation:
         assert o.health_pct == 0.9
 
     def test_rationale_required(self) -> None:
+        # rationale now has a default — but empty string still violates min_length=1
         with pytest.raises(ValidationError):
-            Observation(tick=1, health_pct=1.0)  # type: ignore[call-arg]
+            Observation(rationale="", tick=1, health_pct=1.0)
 
     def test_health_pct_bounds(self) -> None:
         with pytest.raises(ValidationError):

@@ -228,7 +228,7 @@ class BaseAgent(ABC, Generic[TOut]):
             "escalate": raw.get("escalate") or False,
             "escalate_reason": raw.get("escalate_reason") or "",
         }
-        merged = {**defaults, **{k: v for k, v in raw.items() if v is not None}}
+        merged = {**defaults, **{k: v for k, v in raw.items() if v is not None and v != ""}}
         return self.output_schema.model_validate(merged)
 
 

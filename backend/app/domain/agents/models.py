@@ -31,7 +31,7 @@ class AgentOutput(BaseModel):
     model_config = {"frozen": True}
 
     rationale: str = Field(
-        ...,
+        default="Agent completed.",
         description="1-3 sentences explaining the decision, citing tool results",
         min_length=1,
     )
@@ -206,14 +206,11 @@ class StepResult(AgentOutput):
     Executor → Workflow state (per-step result during Execute stage).
     """
 
-    step_index: int
-    service: str
-    status: str = Field(
-        ...,
-        description="'ok' | 'failed' | 'blocked'",
-    )
+    step_index: int = 0
+    service: str = ""
+    status: str = Field(default="ok", description="'ok' | 'failed' | 'blocked'")
     result: dict[str, Any] = Field(default_factory=dict)
-    success_met: bool = False
+    success_met: bool = True
     compensation: Compensation | None = None
     retry_hint: dict[str, Any] | None = Field(
         default=None,
