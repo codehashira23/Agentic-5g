@@ -184,3 +184,21 @@ body {
   background: color-mix(in srgb, var(--accent-ai) 20%, transparent);
   color: var(--accent-ai);
 }
+
+/* Utility: glass card */
+.glass {
+  background: color-mix(in srgb, var(--bg-card) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Focus ring consistent with design system */
+:focus-visible {
+  outline: 2px solid var(--accent-ai);
+  outline-offset: 2px;
+}
+
+/* Remove default focus outline — we use focus-visible above */
+:focus:not(:focus-visible) {
+  outline: none;
+}

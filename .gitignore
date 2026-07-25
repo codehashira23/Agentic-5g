@@ -10,6 +10,7 @@ notes/
 learning/
 *.scratch.md
 project docs/
+.agents/
 
 
 # --- Secrets & environment ---
