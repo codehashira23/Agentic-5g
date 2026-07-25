@@ -6,34 +6,36 @@
    All values consumed by Tailwind's @theme and directly as CSS variables.
 --------------------------------------------------------------------------- */
 
-/* --- Dark theme (default) ------------------------------------------------ */
+/* --- Dark theme (default) — "Black & Gold Elegance" --------------------- */
+/* Palette: Black #000, Prussian Blue #14213D, Gold #FCA311,
+   Alabaster #E5E5E5, White #FFF */
 :root {
   /* Canvas / surfaces */
-  --bg-base: #0b0f14;
-  --bg-panel: #111827;
-  --bg-card: #151b23;
-  --bg-card-hover: #1a2130;
+  --bg-base: #000000;        /* pure black canvas */
+  --bg-panel: #0a0f1c;       /* near-black navy — sidebar / top bar */
+  --bg-card: #14213d;        /* Prussian blue — card surface */
+  --bg-card-hover: #1d2d4f;  /* lifted navy on hover */
 
-  /* Borders */
-  --border-hairline: #1f2937;
-  --border-subtle: #374151;
+  /* Borders — navy tones */
+  --border-hairline: #22314f;
+  --border-subtle: #344670;
 
-  /* Typography */
-  --text-primary: #e5e7eb;
-  --text-muted: #9ca3af;
-  --text-faint: #6b7280;
+  /* Typography — alabaster & white */
+  --text-primary: #e5e5e5;   /* alabaster */
+  --text-muted: #9fb0c9;     /* muted navy-grey */
+  --text-faint: #6b7a94;
 
-  /* Semantic status colours (shared across light & dark) */
-  --ok: #10b981; /* emerald-500 */
-  --ok-bg: #064e3b; /* emerald-900 */
-  --warn: #f59e0b; /* amber-500 */
-  --warn-bg: #78350f; /* amber-900 */
-  --crit: #ef4444; /* red-500 */
-  --crit-bg: #7f1d1d; /* red-900 */
-  --accent-ai: #8b5cf6; /* violet-500 */
-  --accent-ai-bg: #3b0764; /* violet-950 */
-  --info: #3b82f6; /* blue-500 */
-  --info-bg: #1e3a5f;
+  /* Semantic status colours */
+  --ok: #34d399;             /* emerald — success */
+  --ok-bg: #05372a;
+  --warn: #fca311;           /* gold — on-theme warning/attention */
+  --warn-bg: #4a2f06;
+  --crit: #ef4444;           /* red — critical */
+  --crit-bg: #7f1d1d;
+  --accent-ai: #fca311;      /* GOLD — brand / primary accent */
+  --accent-ai-bg: #3a2606;
+  --info: #4f83cc;           /* soft blue — info / standby */
+  --info-bg: #14213d;
 
   /* Radius & spacing rhythm (4px base grid) */
   --radius: 0.75rem;
@@ -49,9 +51,15 @@
   --shadow-1: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
   --shadow-2: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
 
-  /* Fonts — matched to layout.tsx Geist variables */
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Fonts — provided by layout.tsx next/font variables */
+  --font-sans: var(--font-space-grotesk), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-orbitron), var(--font-space-grotesk), sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "JetBrains Mono", monospace;
+
+  /* Secondary accent — light gold, pairs with the primary gold for
+     rich gradients (variable name kept for component compatibility) */
+  --accent-cyan: #ffd166;   /* light gold */
+  --accent-teal: #ffb733;   /* mid gold */
 }
 
 /* --- Light theme override (add class="light" to <html>) ------------------ */
@@ -73,7 +81,12 @@
 @theme inline {
   /* Fonts */
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
   --font-mono: var(--font-mono);
+
+  /* Secondary accents */
+  --color-cyan: var(--accent-cyan);
+  --color-teal: var(--accent-teal);
 
   /* Colours available as bg-*, text-*, border-* Tailwind classes */
   --color-base: var(--bg-base);
@@ -135,8 +148,17 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: var(--bg-base);
   color: var(--text-primary);
+  /* Layered atmospheric background: warm gold glow (top-left) + cool navy
+     glow (top-right) + faint navy grid, over pure black */
+  background-color: var(--bg-base);
+  background-image:
+    radial-gradient(900px circle at 10% -10%, color-mix(in srgb, var(--accent-ai) 12%, transparent), transparent 42%),
+    radial-gradient(820px circle at 100% 0%, color-mix(in srgb, #14213d 65%, transparent), transparent 45%),
+    linear-gradient(to right, color-mix(in srgb, var(--border-hairline) 45%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--border-hairline) 45%, transparent) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 46px 46px, 46px 46px;
+  background-attachment: fixed;
 }
 
 /* Respect reduced-motion preference (04-ui.md §8) */
@@ -201,4 +223,192 @@ body {
 /* Remove default focus outline — we use focus-visible above */
 :focus:not(:focus-visible) {
   outline: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Display / branding
+--------------------------------------------------------------------------- */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+}
+
+/* Page-level headings — display font + gradient accent bar.
+   Targets every page <h1> inside <main> (all pages share this pattern),
+   so the whole site gets techy, branded titles with no per-page edits. */
+main h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  line-height: 1.2;
+}
+main h1::before {
+  content: "";
+  width: 4px;
+  align-self: stretch;
+  min-height: 1.1em;
+  border-radius: 9999px;
+  background: linear-gradient(180deg, var(--accent-ai), var(--accent-cyan));
+  flex-shrink: 0;
+}
+
+/* Gradient section eyebrow — small uppercase label with gradient text */
+.section-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Gradient brand text — rich gold shimmer */
+.brand-gradient {
+  background: linear-gradient(
+    100deg,
+    #fca311 0%,
+    #ffb733 45%,
+    #ffe0a3 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Soft glow behind key elements */
+.glow-ai {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent-ai) 30%, transparent),
+    0 0 24px -6px color-mix(in srgb, var(--accent-ai) 60%, transparent);
+}
+
+/* Animated gradient border card */
+.card-hover-lift {
+  transition: transform var(--dur-base), box-shadow var(--dur-base), border-color var(--dur-base);
+}
+.card-hover-lift:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent-ai) 35%, var(--border-hairline));
+  box-shadow: 0 8px 24px -12px color-mix(in srgb, var(--accent-ai) 50%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   Cinematic splash / loading screen
+--------------------------------------------------------------------------- */
+.splash-root {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  background:
+    radial-gradient(1200px circle at 50% 45%, color-mix(in srgb, #fca311 7%, transparent), #000000 66%),
+    #000000;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 600ms ease, visibility 600ms ease;
+}
+.splash-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Expanding 5G signal rings */
+.splash-rings {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.splash-ring {
+  position: absolute;
+  border-radius: 9999px;
+  border: 1.5px solid color-mix(in srgb, var(--accent-ai) 60%, transparent);
+  animation: splash-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.splash-ring:nth-child(1) { width: 60px;  height: 60px;  animation-delay: 0s; }
+.splash-ring:nth-child(2) { width: 60px;  height: 60px;  animation-delay: 0.5s; }
+.splash-ring:nth-child(3) { width: 60px;  height: 60px;  animation-delay: 1s; }
+.splash-ring:nth-child(4) { width: 60px;  height: 60px;  animation-delay: 1.5s; }
+
+@keyframes splash-ping {
+  0%   { transform: scale(0.5); opacity: 0.9; border-color: color-mix(in srgb, var(--accent-cyan) 80%, transparent); }
+  100% { transform: scale(3.0); opacity: 0;   border-color: color-mix(in srgb, var(--accent-ai) 10%, transparent); }
+}
+
+/* Core node in center */
+.splash-core {
+  width: 54px;
+  height: 54px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, var(--accent-ai), var(--accent-cyan));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 40px -4px color-mix(in srgb, var(--accent-ai) 80%, transparent);
+  animation: splash-core-pulse 1.6s ease-in-out infinite;
+  z-index: 2;
+}
+@keyframes splash-core-pulse {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 40px -4px color-mix(in srgb, var(--accent-ai) 80%, transparent); }
+  50%      { transform: scale(1.12); box-shadow: 0 0 60px 0px color-mix(in srgb, var(--accent-cyan) 90%, transparent); }
+}
+
+/* Wordmark reveal */
+.splash-wordmark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  letter-spacing: 0.14em;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: splash-rise 700ms ease forwards;
+  animation-delay: 400ms;
+}
+.splash-tagline {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  opacity: 0;
+  animation: splash-rise 700ms ease forwards;
+  animation-delay: 700ms;
+}
+@keyframes splash-rise {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Progress bar */
+.splash-bar {
+  width: 220px;
+  height: 3px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--border-subtle) 60%, transparent);
+  overflow: hidden;
+  opacity: 0;
+  animation: splash-rise 500ms ease forwards;
+  animation-delay: 900ms;
+}
+.splash-bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, var(--accent-ai), var(--accent-cyan));
+  animation: splash-load 1.9s ease-out forwards;
+  animation-delay: 500ms;
+}
+@keyframes splash-load {
+  0%   { width: 0%; }
+  60%  { width: 72%; }
+  100% { width: 100%; }
 }

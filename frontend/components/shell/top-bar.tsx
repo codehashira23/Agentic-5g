@@ -62,10 +62,10 @@ export function TopBar() {
           <button
             type="submit"
             disabled={submitting || !goal.trim()}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium
-                       bg-ai text-white hover:bg-ai/90 transition-all
-                       disabled:opacity-40 disabled:cursor-not-allowed shadow-sm
-                       active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold
+                       bg-ai text-black hover:brightness-110 transition-all
+                       disabled:opacity-40 disabled:cursor-not-allowed
+                       shadow-[0_0_20px_-6px_var(--color-ai)] active:scale-95"
             aria-label="Submit intent"
           >
             <Send className="w-3.5 h-3.5" />

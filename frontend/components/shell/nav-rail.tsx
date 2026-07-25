@@ -61,12 +61,14 @@ export function NavRail() {
       {/* Logo */}
       <div className="px-4 pt-5 pb-4 border-b border-border">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-ai/20 border border-ai/30 flex items-center justify-center shrink-0">
-            <Radio className="w-3.5 h-3.5 text-ai" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-ai/30 to-cyan/20 border border-ai/40 flex items-center justify-center shrink-0 glow-ai">
+            <Radio className="w-4 h-4 text-cyan" />
           </div>
           <div>
-            <p className="text-sm font-bold text-primary leading-none">Agent5G</p>
-            <p className="text-[10px] text-faint mt-0.5">5G Advanced · Rel 20</p>
+            <p className="font-display brand-gradient text-base font-extrabold leading-none tracking-wider">
+              AGENT5G
+            </p>
+            <p className="text-[10px] text-faint mt-1 tracking-widest uppercase">5G Advanced · Rel 20</p>
           </div>
         </div>
       </div>
