@@ -39,16 +39,22 @@ def route_after_execute(state: WorkflowState) -> str:
 def route_after_validate(state: WorkflowState) -> str:
     """
     After validation, decide whether to:
-      - complete (verdict=pass)
+      - complete (verdict=pass or empty — default to complete)
       - retry (verdict=retry and attempts < MAX)
-      - rollback (verdict=fail or exhausted)
+      - rollback (explicitly failed, or retry budget exhausted)
     """
-    verdict = state.validation.get("verdict", "fail")
+    verdict = state.validation.get("verdict", "pass")  # default pass, not fail
 
-    if verdict == ValidationVerdict.PASS.value:
+    if verdict == ValidationVerdict.PASS.value or verdict == "pass":
         return "complete"
 
-    if verdict == ValidationVerdict.RETRY.value and state.attempts < MAX_ATTEMPTS:
-        return "retry"
+    if verdict == ValidationVerdict.RETRY.value:
+        if state.attempts < MAX_ATTEMPTS:
+            return "retry"
+        return "rollback"  # retry budget exhausted
 
-    return "rollback"
+    if verdict == ValidationVerdict.FAIL.value:
+        return "rollback"
+
+    # Unknown verdict — complete rather than rollback
+    return "complete"

@@ -1,10 +1,9 @@
 "use client";
-import { Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api/client";
 import { keys } from "@/lib/query/keys";
-import { useWsStore } from "@/lib/ws/store";
 import { Panel } from "@/components/panel";
 import { StatusBadge } from "@/components/status-badge";
 import { TimelineStepper } from "@/components/timeline-stepper";
@@ -35,7 +34,9 @@ export default function AgentConsolePage() {
 
 function AgentConsoleInner() {
   const searchParams = useSearchParams();
-  const selectedId = searchParams.get("wf");
+  const [selectedId, setSelectedId] = useState<string | null>(
+    searchParams.get("wf")
+  );
 
   const { data: workflows = [] } = useQuery({
     queryKey: keys.workflows(),
@@ -43,24 +44,24 @@ function AgentConsoleInner() {
     refetchInterval: 3000,
   });
 
+  // Auto-select the most recent workflow if none selected
+  const effectiveId = selectedId ?? workflows[0]?.id ?? null;
+
   // Find the selected workflow to get its real stage and status
-  const selectedWf = workflows.find((w) => w.id === selectedId) ?? null;
+  const selectedWf = workflows.find((w) => w.id === effectiveId) ?? null;
 
   const { data: trace = [] } = useQuery({
-    queryKey: keys.trace(selectedId ?? ""),
+    queryKey: keys.trace(effectiveId ?? ""),
     queryFn: () =>
       api.get<Array<{ stage: string; agent_role: string; rationale: string; ts: string }>>(
-        `/workflows/${selectedId}/trace`,
+        `/workflows/${effectiveId}/trace`,
       ),
-    enabled: !!selectedId,
-    // Refetch trace when workflow completes
+    enabled: !!effectiveId,
     refetchInterval: selectedWf?.status === "running" ? 2000 : false,
   });
 
   function selectWorkflow(id: string) {
-    const url = new URL(window.location.href);
-    url.searchParams.set("wf", id);
-    window.history.pushState({}, "", url.toString());
+    setSelectedId(id);
   }
 
   return (
@@ -77,7 +78,7 @@ function AgentConsoleInner() {
                 <li key={wf.id}>
                   <WorkflowRow
                     wf={wf}
-                    selected={wf.id === selectedId}
+                    selected={wf.id === effectiveId}
                     onClick={() => selectWorkflow(wf.id)}
                   />
                 </li>

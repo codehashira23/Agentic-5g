@@ -197,11 +197,11 @@ async def validate_node(
     snapshot = orchestrator.twin_service.snapshot()
 
     validation: Validation = await orchestrator.validator.run({
+        "goal": state.goal,
         "success_criteria": success_criteria,
         "current_state": {
             "tick": snapshot.tick,
             "health_pct": snapshot.health_pct,
-            # Only send summary counts, not full NF states
             "nf_count": len(snapshot.nf_states),
             "failed_nfs": [
                 nf_id for nf_id, s in snapshot.nf_states.items()

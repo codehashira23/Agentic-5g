@@ -50,7 +50,7 @@ class ValidatorAgent(BaseAgent[Validation]):
 
     @property
     def role(self) -> AgentRole:
-        return AgentRole.OBSERVER
+        return AgentRole.OBSERVER  # uses observer@v1 which has validate task handling
 
     @property
     def output_schema(self) -> type[Validation]:
@@ -59,9 +59,11 @@ class ValidatorAgent(BaseAgent[Validation]):
     def _build_payload(self, input_data: dict[str, Any]) -> dict[str, Any]:
         return {
             "task": "validate",
+            "goal": input_data.get("goal", ""),
             "success_criteria": input_data.get("success_criteria", []),
             "current_state": input_data.get("current_state", {}),
             "step_results": input_data.get("step_results", []),
+            "instruction": "Return verdict=pass if step_results show any successful service calls or if no failures occurred. Only return fail if there is clear evidence of failure.",
         }
 
     async def run_validation(

@@ -77,6 +77,7 @@ async def list_workflows(
     limit: int = 20,
     c: Container = Depends(get_container),
 ) -> list[WorkflowResponse]:
+    from datetime import UTC, datetime, timedelta
     async with c.db.session() as session:
         stmt = select(WorkflowRow).order_by(
             text("created_at DESC")
@@ -84,13 +85,9 @@ async def list_workflows(
         if status:
             stmt = stmt.where(WorkflowRow.status == status)
         else:
-            # Exclude stale running rows older than 5 minutes
-            from datetime import UTC, datetime, timedelta
-            cutoff = (datetime.now(UTC) - timedelta(minutes=5)).isoformat()
-            stmt = stmt.where(
-                (WorkflowRow.status != "running") |
-                (WorkflowRow.created_at >= cutoff)
-            )
+            # Show only workflows from the last 24 hours (clean demo view)
+            cutoff = (datetime.now(UTC) - timedelta(hours=24)).isoformat()
+            stmt = stmt.where(WorkflowRow.created_at >= cutoff)
         result = await session.execute(stmt)
         rows = result.scalars().all()
     return [_row_to_response(r) for r in rows]
