@@ -17,11 +17,6 @@ export default function SimulationPage() {
     refetchInterval: 2000,
   });
 
-  const { data: scenarios = [] } = useQuery({
-    queryKey: keys.scenarios(),
-    queryFn: () => api.get<string[]>("/simulation/scenarios"),
-  });
-
   const mutate = (path: string, body?: object) => () =>
     api.post(path, body ?? {}).then(() => qc.invalidateQueries({ queryKey: keys.simStatus() }));
 
@@ -31,6 +26,7 @@ export default function SimulationPage() {
   const resetMut = useMutation({ mutationFn: mutate("/simulation/reset") });
   const faultMut = useMutation({
     mutationFn: () => api.post("/simulation/fault", { nf_id: faultNfId, type: "fail" }),
+    onSuccess: () => setFaultNfId(""),
   });
 
   return (
@@ -64,37 +60,35 @@ export default function SimulationPage() {
       </Panel>
 
       <Panel title="Fault Injection">
+        <p className="text-xs text-faint mb-3">
+          Inject a failure on any network function. The autonomous recovery agent will detect it and start a recovery workflow automatically.
+        </p>
         <div className="flex gap-2 items-center">
           <input
             value={faultNfId}
             onChange={(e) => setFaultNfId(e.target.value)}
-            placeholder="NF id e.g. nrf_core_1"
+            placeholder="NF id — e.g. upf_delhi_1, nrf_core_1, edge_delhi_1"
             className="flex-1 bg-card border border-border rounded px-3 py-1.5 text-sm text-primary placeholder:text-faint focus:outline-none focus:border-crit"
           />
           <button
             onClick={() => faultMut.mutate()}
-            disabled={!faultNfId}
+            disabled={!faultNfId || faultMut.isPending}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-crit/15 text-crit rounded text-sm hover:bg-crit/25 disabled:opacity-40"
             aria-label="Inject fault"
           >
             <Zap className="w-3 h-3" /> Inject Fail
           </button>
         </div>
-      </Panel>
-
-      <Panel title="Scenario Presets">
-        <ul className="flex flex-wrap gap-2">
-          {scenarios.map((s) => (
-            <li key={s}>
-              <button
-                onClick={() => api.post("/simulation/reset", { name: s }).then(() => qc.invalidateQueries({ queryKey: keys.simStatus() }))}
-                className="px-3 py-1 bg-card border border-border rounded text-xs text-muted hover:border-ai hover:text-ai transition-colors"
-              >
-                {s}
-              </button>
-            </li>
-          ))}
-        </ul>
+        {faultMut.isSuccess && (
+          <p className="mt-2 text-xs text-ok">
+            Fault injected — check Agent Console for the autonomous recovery workflow.
+          </p>
+        )}
+        {faultMut.isError && (
+          <p className="mt-2 text-xs text-crit">
+            Fault injection failed — NF id not found or simulation not running.
+          </p>
+        )}
       </Panel>
     </div>
   );
