@@ -91,7 +91,8 @@ class AutonomousRecoveryHandler:
     async def handle(self, event: Any) -> None:
         """
         Called by the event bus when NF_FAILED is published.
-        Starts a recovery workflow as a background asyncio task.
+        Only responds to injected faults — stochastic hazards are too frequent
+        and would spam recovery workflows during normal simulation.
         """
         import time
 
@@ -101,6 +102,11 @@ class AutonomousRecoveryHandler:
 
         if not nf_id:
             logger.warning("AutonomousRecoveryHandler: received NF_FAILED with no entity_id")
+            return
+
+        # Only auto-recover injected faults — stochastic hazards recover on their own
+        if cause != "injected":
+            logger.debug("AutonomousRecovery: ignoring %s (cause=%s, not injected)", nf_id, cause)
             return
 
         # Extract region from nf_id (e.g. upf_delhi_1 → Delhi)

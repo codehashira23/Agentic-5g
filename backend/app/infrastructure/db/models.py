@@ -246,7 +246,7 @@ class WorkflowRow(Base):
     goal = Column(Text, nullable=False)
     trigger = Column(
         Text,
-        CheckConstraint("trigger IN ('user','observer','template')"),
+        CheckConstraint("trigger IN ('user','observer','template','autonomous')"),
         nullable=False,
         default="user",
     )
