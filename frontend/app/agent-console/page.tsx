@@ -50,14 +50,19 @@ function AgentConsoleInner() {
   // Find the selected workflow to get its real stage and status
   const selectedWf = workflows.find((w) => w.id === effectiveId) ?? null;
 
-  const { data: trace = [] } = useQuery({
+  type TraceEntry = { stage: string; agent_role: string; rationale: string; ts: string };
+  const { data: trace = [] } = useQuery<TraceEntry[]>({
     queryKey: keys.trace(effectiveId ?? ""),
     queryFn: () =>
-      api.get<Array<{ stage: string; agent_role: string; rationale: string; ts: string }>>(
+      api.get<TraceEntry[]>(
         `/workflows/${effectiveId}/trace`,
       ),
     enabled: !!effectiveId,
-    refetchInterval: selectedWf?.status === "running" ? 2000 : false,
+    staleTime: 0,
+    // Poll while running; after completion keep polling until trace arrives
+    refetchInterval: selectedWf?.status === "running" ? 2000 : 5000,
+    // Stop polling once we have trace data and workflow is done
+    refetchIntervalInBackground: false,
   });
 
   function selectWorkflow(id: string) {
