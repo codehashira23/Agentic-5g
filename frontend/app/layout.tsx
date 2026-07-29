@@ -7,6 +7,7 @@ import { TopBar } from "@/components/shell/top-bar";
 import { WsInit } from "@/lib/ws/ws-init";
 import { AppErrorBoundary } from "@/components/error-boundary";
 import { SplashScreen } from "@/components/splash-screen";
+import { SecretHotkey } from "@/components/secret-hotkey";
 
 // Body + headings — modern technical sans
 const spaceGrotesk = Space_Grotesk({
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <AppErrorBoundary>
             <WsInit />
+            <SecretHotkey />
             <div className="flex flex-1 overflow-hidden">
               <NavRail />
               <div className="flex flex-col flex-1 overflow-hidden">

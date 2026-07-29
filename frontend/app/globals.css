@@ -412,3 +412,169 @@ main h1::before {
   60%  { width: 72%; }
   100% { width: 100%; }
 }
+
+/* ===========================================================================
+   Presentation Mode ("pv-" = presentation view)
+   Hidden keynote deck. All animations use transform/opacity only so they stay
+   GPU-accelerated and hold 60fps on projectors. Respects reduced-motion via
+   the global rule above.
+   ======================================================================== */
+
+/* Root deck surface — deep cinematic black with a warm gold floor glow.
+   z-index sits above the app splash (9999) so the deck is never covered. */
+.pv-root {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px circle at 50% 120%, color-mix(in srgb, var(--accent-ai) 10%, transparent), transparent 60%),
+    var(--bg-base);
+}
+.pv-root.light {
+  background:
+    radial-gradient(1200px circle at 50% 120%, color-mix(in srgb, var(--accent-ai) 14%, transparent), transparent 60%),
+    var(--bg-base);
+}
+
+/* Hide the cursor when idle during a running presentation */
+.pv-hide-cursor,
+.pv-hide-cursor * {
+  cursor: none !important;
+}
+
+/* --- Aurora ribbons -------------------------------------------------------- */
+.pv-aurora {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.55;
+  will-change: transform;
+  mix-blend-mode: screen;
+}
+@keyframes pv-aurora-1 {
+  0%,
+  100% { transform: translate3d(-8%, -6%, 0) scale(1); }
+  50% { transform: translate3d(10%, 8%, 0) scale(1.25); }
+}
+@keyframes pv-aurora-2 {
+  0%,
+  100% { transform: translate3d(6%, 4%, 0) scale(1.1); }
+  50% { transform: translate3d(-10%, -8%, 0) scale(0.9); }
+}
+@keyframes pv-aurora-3 {
+  0%,
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-6%, 10%, 0) scale(1.2); }
+}
+.pv-aurora-1 { animation: pv-aurora-1 18s ease-in-out infinite; }
+.pv-aurora-2 { animation: pv-aurora-2 22s ease-in-out infinite; }
+.pv-aurora-3 { animation: pv-aurora-3 26s ease-in-out infinite; }
+
+/* --- Floating blobs -------------------------------------------------------- */
+@keyframes pv-float {
+  0%,
+  100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-26px) translateX(14px); }
+}
+.pv-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(50px);
+  will-change: transform;
+  animation: pv-float 14s ease-in-out infinite;
+}
+
+/* --- Moving grid ----------------------------------------------------------- */
+@keyframes pv-grid-pan {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 46px 46px, 46px 46px; }
+}
+.pv-grid {
+  position: absolute;
+  inset: -2px;
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--border-hairline) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--border-hairline) 55%, transparent) 1px, transparent 1px);
+  background-size: 46px 46px, 46px 46px;
+  mask-image: radial-gradient(circle at 50% 45%, black, transparent 78%);
+  -webkit-mask-image: radial-gradient(circle at 50% 45%, black, transparent 78%);
+  animation: pv-grid-pan 6s linear infinite;
+  opacity: 0.5;
+}
+
+/* --- Spotlight sweep ------------------------------------------------------- */
+@keyframes pv-spotlight {
+  0%,
+  100% { opacity: 0.5; transform: translateX(-8%); }
+  50% { opacity: 0.85; transform: translateX(8%); }
+}
+.pv-spotlight {
+  position: absolute;
+  inset: -20% 0 auto 0;
+  height: 90%;
+  background: radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--accent-ai) 22%, transparent), transparent 70%);
+  animation: pv-spotlight 12s ease-in-out infinite;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* --- Faint scanline shimmer for a hi-tech feel ----------------------------- */
+@keyframes pv-shimmer {
+  from { background-position: 0 -100vh; }
+  to { background-position: 0 100vh; }
+}
+
+/* --- Marquee for the tech ticker ------------------------------------------ */
+@keyframes pv-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.pv-marquee-track {
+  display: inline-flex;
+  gap: 1rem;
+  animation: pv-marquee 26s linear infinite;
+  will-change: transform;
+}
+
+/* --- Animated gradient text (headlines) ------------------------------------ */
+@keyframes pv-text-shift {
+  to { background-position: 200% center; }
+}
+.pv-gradient-text {
+  background: linear-gradient(100deg, #fca311 0%, #ffd166 25%, #ffe0a3 50%, #ffd166 75%, #fca311 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: pv-text-shift 6s linear infinite;
+}
+
+/* --- Laser pointer dot ----------------------------------------------------- */
+.pv-laser {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 10050;
+  background: radial-gradient(circle, rgba(255, 80, 60, 1) 0%, rgba(255, 40, 30, 0.85) 30%, transparent 70%);
+  box-shadow: 0 0 14px 4px rgba(255, 40, 30, 0.7), 0 0 42px 12px rgba(255, 40, 30, 0.35);
+  will-change: transform;
+}
+
+/* --- Progress ring / conic for autoplay ------------------------------------ */
+@keyframes pv-spin {
+  to { transform: rotate(360deg); }
+}
+.pv-spin { animation: pv-spin 1s linear infinite; }
+
+/* Slide content should never trigger the page scrollbar */
+.pv-slide-scroll {
+  scrollbar-width: none;
+}
+.pv-slide-scroll::-webkit-scrollbar { display: none; }
