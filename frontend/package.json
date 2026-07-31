@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "gen:types": "npx openapi-typescript http://localhost:8000/openapi.json -o lib/api/types.gen.ts",
-    "gen:brochure": "node scripts/generate-brochure.mjs"
+    "gen:brochure": "node scripts/generate-brochure.mjs",
+    "gen:doctree": "node scripts/generate-doctree.mjs"
   },
   "dependencies": {
     "@reactflow/core": "^11.11.4",
